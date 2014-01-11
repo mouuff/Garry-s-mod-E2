@@ -1,0 +1,50 @@
+@name Target Finder
+@inputs NextTarget PrevTarget HoldTarget Save:entity HideChat
+@outputs Target:entity TargetPos:vector X Y Z TargetName:string
+@persist Choice Players:array Target:entity Update TargetName:string
+@trigger all
+
+interval(50)
+
+if (first()|duped()|!HoldTarget){
+    Choice = 1
+    NextTarget = 0
+    Update = 0
+    findExcludeEntity(Save)
+    findByClass("player")
+    findSortByDistance(entity():pos())
+    Players = findToArray()
+    LastTargetName = TargetName
+    Target = Players[Choice, entity]
+    TargetName=Target:name()
+    if ((LastTargetName != TargetName) & TargetName & !HideChat){
+        print("Targeting: "+TargetName)
+    }
+}
+
+if (~NextTarget & NextTarget & HoldTarget){
+    Choice += 1
+    LastTargetName = TargetName
+    Target = Players[(Choice%Players:count()), entity]
+    TargetName=Target:name()
+    if ((LastTargetName != TargetName) & TargetName & !HideChat){
+        print("Targeting: "+TargetName)
+    }
+}
+elseif (~PrevTarget & $PrevTarget & HoldTarget){
+    Choice -= 1
+    LastTargetName = TargetName
+    Target = Players[(Choice%Players:count()), entity]
+    TargetName=Target:name()
+    if ((LastTargetName != TargetName) & TargetName & !HideChat){
+        print("Targeting: "+TargetName)
+    }
+}
+
+TargetPos = Target:pos()
+
+X = TargetPos:x()
+Y = TargetPos:y()
+Z = TargetPos:z()
+
+Update += 1

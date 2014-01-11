@@ -1,0 +1,48 @@
+@name Keyboard Target
+@inputs Memory InUse User:entity
+@outputs Screen:string Target:entity TargetPos:vector X Y Z
+@persist Input:string Target:entity LastChar Out
+@model models/props_lab/harddrive01.mdl
+
+interval(100)
+
+if (first()|dupefinished()){
+    Screen = "Welcome on the targeting computer"
+}
+
+if (!InUse & Input){
+    if (Input == "closest"){
+        findExcludeEntity(User)
+        findByClass("player")
+        findSortByDistance(entity():pos())
+        Target = find()
+    }
+    else{
+        Target = findPlayerByName(Input)
+    }
+    
+    if (Target){
+        Screen = "Target:\n" + Target:name()
+    }
+    else{
+        Screen = "No Target"
+    }
+    Input = ""
+}
+
+if ((Memory) & Memory != 175 & LastChar != Memory){
+    if (Memory == 127){#127 = Del Key
+        Input = Input:sub(0,Input:length()-1)
+    }
+    else{
+        Input += toChar(Memory)
+        LastChar = Memory
+    }
+    Screen = "Target:\n"+Input
+}
+
+TargetPos = Target:pos()
+X = TargetPos:x()
+Y = TargetPos:y()
+Z = TargetPos:z()
+

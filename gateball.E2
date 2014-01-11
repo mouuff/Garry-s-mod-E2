@@ -1,0 +1,29 @@
+@name GateBall
+@model models/XQM/Rails/trackball_1.mdl
+
+interval(100)
+
+function void gotoPos(Pos:vector, Prop:entity){
+    Prop:applyForce((((Pos-Prop:pos())*10) - Prop:vel())*Prop:mass())
+}
+
+if (first()|dupefinished()){
+    #ifdef entity:propFreeze(number)
+    entity():propFreeze(0)
+    #else
+    hint("Unfreeze the prop",10)
+    #endif
+    hint("Add a long rope to your ship\nthen you can travel gates",15)
+}
+
+Ship = entity():isConstrainedTo()
+
+if (entity():hasConstraints("Rope")){
+    entity():setColor(0,0,0,0)
+    findByClass("stargate_*")
+    findSortByDistance(Ship:pos())
+    Stargate = find()
+    if (Stargate:pos():distance(entity():pos())<=1024){
+        gotoPos(Stargate:pos(),entity())
+    }
+}

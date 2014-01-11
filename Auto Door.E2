@@ -1,0 +1,24 @@
+@name Auto Door
+@inputs Opened
+@outputs Toggle
+
+interval(500)
+
+
+findByClass("player")
+findSortByDistance(entity():isWeldedTo():pos())
+if (find():pos():distance(entity():isWeldedTo():pos())<150){
+    if (!Opened){
+        timer("Toggle",50)
+    }
+}
+elseif (Opened){
+    timer("Toggle",50)
+}
+
+if (clk("Toggle")) {
+    Toggle = 1
+}
+else {
+    Toggle = 0
+}

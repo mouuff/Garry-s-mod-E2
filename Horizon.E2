@@ -1,0 +1,59 @@
+@name HorizonMissile
+@inputs 
+@outputs Fire Engine ReleaseCovers HitPos1:vector HitPos2:vector HitPos3:vector HitPos4:vector HitPos5:vector HitPos6:vector
+@persist Targets:array TimeInAir Firing Engine Next
+@trigger 
+
+
+runOnChat(1)
+interval(1000)
+
+if (first() | duped()){
+    TimeInAir = 0
+    Firing = 0
+    Engine = 0
+    Fire = 0
+    Next = 1
+}
+
+if (chatClk(owner())){
+    LastSaid = owner():lastSaid():explode(" ")
+    Command = LastSaid[1, string]
+    Arg = LastSaid[2, string]
+    if (Command == "!fire"){
+        Engine = 1
+        Firing = 1
+    }
+    elseif (Command == "!at"){
+        if (Arg == "aim"){
+            Targets[Next, vector] = owner():aimPos()
+        }
+        else{
+            Targets[Next, vector] = findPlayerByName(Arg):pos()
+        }
+        Next += 1
+    }
+    elseif (Command == "!last"){
+        Next -= 1
+    }
+}
+HitPos1 = Targets[1, vector]
+HitPos2 = Targets[2, vector]
+HitPos3 = Targets[3, vector]
+HitPos4 = Targets[4, vector]
+HitPos5 = Targets[5, vector]
+HitPos6 = Targets[6, vector]
+
+if (Firing){
+    TimeInAir += 1
+    if (TimeInAir >= 6){
+        Engine = 0
+    }
+    if (TimeInAir >= 5){
+        ReleaseCovers = 1
+    }
+    if (TimeInAir >= 7){
+        Fire = 1
+        Firing = 0
+    }
+}

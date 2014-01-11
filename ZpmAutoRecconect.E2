@@ -1,0 +1,18 @@
+@name AutoReconnectZpmToHub
+@inputs HubPower
+@outputs DisconnectZpm
+@persist Reconnecting
+
+if (Reconnecting){
+    DisconnectZpm = 0
+    Reconnecting = 0
+}
+elseif (!HubPower){
+    soundPlay(0, 0, "/alarm/sga_midway_alarm.wav")
+    Reconnecting = 1
+    DisconnectZpm = 1
+    interval(400)
+}
+else{
+    soundStop(0, 0)
+}

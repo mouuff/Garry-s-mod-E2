@@ -1,0 +1,55 @@
+@name Holo Mutiplier
+@inputs Disable
+@persist Ship:entity ShipsPos:array HoloNumber R
+@trigger all
+
+interval(100)
+
+if (first()|dupefinished()){
+    R = 0
+    HoloNumber = 2#change the number here to change the number of holos
+    if (entity():isWeldedTo()){
+        Ship = entity():isWeldedTo()
+    }
+    else{
+        Ship = owner()
+    }
+    ShipSize = Ship:boxSize():x()
+    for (Holo=1, HoloNumber){
+        holoCreate(Holo)
+        holoModel(Holo, Ship:model())
+        A = vec(randint(ShipSize, ShipSize*Holo*1.3),randint(ShipSize, ShipSize*Holo*1.5), 0)
+        if (randint(0, 1)){
+            ShipsPos[Holo, vector] = A
+        }
+        else{
+            ShipsPos[Holo, vector] = -A
+        }
+        if (Ship != owner()){
+            holoAnim(Holo,3)#opens jumper Engines
+        }
+    }
+    
+}
+
+if (!Disable){
+    for (Holo=1, HoloNumber){
+        holoPos(Holo, Ship:pos()+ShipsPos[Holo, vector])
+        holoAng(Holo, Ship:angles())
+        holoShadow(Holo,1)
+        if (Ship == owner() & R >= 10){
+            #stuff to make the holo more realistic
+            if (owner():keyForward()){
+                holoAnim(Holo, 12)
+            }
+            else{
+                holoAnim(Holo, 139)
+            }
+            if (Holo == HoloNumber){
+                R = 0
+            }
+        }
+    }
+    R += 1
+}
+

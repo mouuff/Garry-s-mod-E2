@@ -1,0 +1,17 @@
+@name Shield Power Monitor
+@inputs Strength
+@outputs X Y Length UpdateFreq
+@persist Time UpdateFreq Length
+
+
+if (first()|duped()){
+    Time = 0
+    Length = 200
+    UpdateFreq = 0.25
+}
+Time += 0.005
+
+interval(500)
+
+X = Time%2-1
+Y = Strength/100

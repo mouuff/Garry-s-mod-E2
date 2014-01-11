@@ -1,0 +1,102 @@
+@name HoverdriveE2
+@inputs SmallJump SmallJumpLen
+@outputs TargetPos:vector TargetAngle:angle Jump
+@persist Hoverdrive:entity SavedPos:table TargetPos:vector TargetAngle:angle Jump
+
+function entity findStargateByAddress(Address:string){
+    findByClass("stargate_*")
+    Stargates = findToArray()
+    for (I=1, Stargates:count()){
+        Stargate = Stargates[I, entity]
+        if (Stargate:stargateAddress() == Address:explode("#")[1, string]){
+            break
+        }
+    }
+    return Stargate
+}
+
+
+function void savePos(Name:string, Pos:vector){
+    SavedPos[Name, vector] = Pos
+}
+function void resetPos(){
+    SavedPos = table()
+}
+function vector getPos(Name:string){
+    Keys = SavedPos:keys()
+    for (Key=1, Keys:count()){
+        if (Keys[Key,string]:find(Name)){
+            return SavedPos[Keys[Key,string],vector]
+        }
+    }
+    return vec(0,0,0)
+}
+
+
+
+function hoverJump(To:vector, Angle:angle){
+    TargetPos = To
+    TargetAngle = Angle
+    timer("Jump", 50)
+}
+
+interval(100)
+runOnChat(1)
+
+if (first()|dupefinished()){
+    Hoverdrive = entity():isWeldedTo()
+    resetPos()
+}
+
+if (~SmallJump & SmallJump){
+    hoverJump(Hoverdrive:toWorld(vec(SmallJumpLen,0,0)), Hoverdrive:angles())
+}
+
+if (chatClk(owner())){
+    LastSaid = owner():lastSaid():explode(" ")
+    Command = LastSaid[1, string]
+    Arg1 = LastSaid[2, string]
+    if (LastSaid[1, string][1] == "!"){
+        hideChat(1)
+    }
+    if (Command=="!savepos"&Arg1){
+        savePos(Arg1, Hoverdrive:pos())
+    }
+    elseif (Command=="!jump"&Arg1){
+        TargetPos = getPos(Arg1)
+        if (TargetPos){
+            hoverJump(TargetPos, Hoverdrive:angles())
+        }
+        else{
+            print(Arg1+" not found")
+        }
+    }
+    elseif (Command=="!escape"){
+        hoverJump(randvec(),Hoverdrive:angles())
+    }
+    elseif (Command=="!taxi"&Arg1){
+        Player = findPlayerByName(Arg1)
+        hoverJump(Player:pos(),Hoverdrive:angles())
+    }
+    elseif (Command=="!togate"){
+        if (Arg1){
+            Stargate = findStargateByAddress(Arg1)
+        }
+        else{
+            findByClass("stargate_*")
+            findSortByDistance(Hoverdrive:pos())
+            Stargate = find()
+        }
+        hoverJump(Stargate:pos(),Stargate:angles())
+    }
+    elseif (Command=="!reset"){
+        reset()
+    }
+}
+
+if (clk("Jump")){
+    Jump = 1
+}
+else{
+    Jump = 0
+}

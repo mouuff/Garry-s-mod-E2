@@ -1,0 +1,36 @@
+@name MK2 Manager
+@inputs Gen1Active Gen2Active Gen1CountDown Gen2CountDown
+@outputs Gen1Toggle Gen2Toggle
+@persist CurrentGen
+@trigger 
+
+interval(1000)
+
+if (first()|duped()){
+    CurrentGen = 0
+}
+Gen1Toggle = 0
+Gen2Toggle = 0
+
+if (!CurrentGen){
+    if (!Gen1Active){
+        Gen1Toggle = 1
+    }
+    if (Gen1CountDown <= 7){
+        CurrentGen = 1
+    }
+    if (Gen2Active){
+        Gen2Toggle = 1
+    }
+}
+elseif (CurrentGen){
+    if (!Gen2Active){
+        Gen2Toggle = 1
+    }
+    if (Gen2CountDown <= 7){
+        CurrentGen = 0
+    }
+    if (Gen1Active){
+        Gen1Toggle = 1
+    }
+}

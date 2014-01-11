@@ -1,0 +1,176 @@
+@name Teleporter Control E2
+@outputs Origin:vector Dest:vector TeleportEverything Send
+@persist SavedPos:table WhiteList:array SafeZoneRange SafeZonePos:vector SafeActive TeleportEverything
+
+interval(500)
+runOnChat(1)
+runOnFile(1)
+
+function void asgardTeleport(From:vector, To:vector, TeleportEverything){
+    Origin = From
+    Dest = To
+    if (TeleportEverything){
+        TeleportEverything = 1
+        timer("DisableTeleportEverything",1000)
+    }
+    else{
+        TeleportEverything = 0
+    }
+    timer("Send", 50)
+}
+
+#position saver functions
+function void savePos(Name:string, Pos:vector){
+    SavedPos[Name, vector] = Pos
+}
+function void resetPos(){
+    SavedPos = table()
+}
+function vector getPos(Name:string){
+    Keys = SavedPos:keys()
+    for (Key=1, Keys:count()){
+        if (Keys[Key,string]:find(Name)){
+            return SavedPos[Keys[Key,string],vector]
+        }
+    }
+    return vec(0,0,0)
+}
+
+#safe zone functions
+function void resetSafe(){
+    WhiteList[1, entity] = owner()
+    SafeActive = 0
+}
+function number toggleSafeZone(){
+    if (SafeActive){
+        SafeActive = 0
+    }
+    else{
+        SafeActive = 1
+    }
+    return SafeActive
+}
+function void setSafeZone(Pos:vector, Range){
+    SafeZoneRange = Range
+    SafeZonePos = Pos
+}
+function entity getIntruderInSafeZone(){
+    findInSphere(SafeZonePos, SafeZoneRange)
+    findIncludeClass("player")
+    findExcludeEntities(WhiteList)
+    findSortByDistance(SafeZonePos)
+    Intruder = find()
+    return Intruder
+}
+function void addToWhiteList(Player:entity){
+    WhiteList[WhiteList:count()+1, entity] = Player
+}
+function vector getSafePos(Pos:vector){
+    holoCreate(1,Pos)
+    holoColor(1,vec(0,0,0),0)
+    for (X=0,8){
+        holoAng(1,ang(vec(0,X*45,0)))
+        R = rangerOffset(300,Pos,holoEntity(1):forward())
+        if (R:distance()>=50){
+            Vec = R:position()-holoEntity(1):toLocal(R:position())/2
+            return Vec
+        }
+    }
+    return Pos+vec(50,0,0)
+}
+
+#main script
+
+
+if (first()|duped()) {
+    print("This E2 is for Asgard Teleporter")
+    hint("Don't forget to link to Teleporter\nYou need CAP",15)
+    resetPos()
+    resetSafe()
+}
+
+if (SafeActive){
+    Intruder = getIntruderInSafeZone()
+    if (Intruder){
+        asgardTeleport(Intruder:pos(), vec(0,0,0), 0)
+    }
+}
+
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Arg1 = LastSaid[2,string]
+    Arg2 = LastSaid[3,string]
+    if (Command[1] == "!"){
+        hideChat(1)
+    }
+    if (Command=="!save"&Arg1){
+        savePos(Arg1:lower(), owner():pos())
+        print("Position Saved as "+Arg1)
+    }
+    elseif (Command=="!base"){
+        if (Arg1){
+            asgardTeleport(findPlayerByName(Arg1):pos(),entity():isWeldedTo():toWorld(vec(-70,0,0)),0)
+        }
+        else{
+            asgardTeleport(owner():pos(),entity():isWeldedTo():toWorld(vec(-70,0,0)),0)
+        }
+    }
+    elseif (Command=="!wall"){
+        asgardTeleport(owner():pos(), owner():toWorld(vec(90, 0, 0)), 0)
+    }
+    elseif (Command=="!cargo"&Arg1){
+        TeleportEverything = 1
+        asgardTeleport(owner():aimPos(), getPos(Arg1:lower())+vec(0,0,50), 1)
+    }
+    elseif (Command=="!to"){
+        Pos = getPos(Arg1:lower())
+        if (Pos){
+            if (Arg2){
+                asgardTeleport(findPlayerByName(Arg2):pos(),Pos, 0)
+            }
+            else{
+                asgardTeleport(owner():pos(), Pos, 0)
+            }
+        }
+        else{print(Arg1+" not found")}
+    }
+    elseif (Command=="!tohim"){
+        asgardTeleport(owner():pos(), getSafePos(findPlayerByName(Arg1):pos()),0)
+    }
+    elseif (Command == "!tome"){
+        asgardTeleport(findPlayerByName(Arg1):pos(), getSafePos(owner():pos()+vec(0,50,0)),0)
+    }
+    elseif (Command == "!reset"){
+        reset()
+    }
+    elseif (Command == "!list"){
+        print("Saved Positions:")
+        for (X=1, SavedPos:count()){
+            print(SavedPos:keys()[X, string])
+        }
+    }
+    elseif (Command == "!safe"){
+        if (Arg1){
+            setSafeZone(owner():pos(),Arg1:toNumber())
+            print("Safe Zone Activated")
+        }
+        else{
+            print("SafeZone: " + toggleSafeZone())
+        }
+    }
+    elseif (Command == "!white" & Arg1){
+        addToWhiteList(findPlayerByName(Arg1))
+    }
+}
+
+if (clk("Send")) {
+    Send = 1
+}
+else {
+    Send = 0
+}
+
+if (clk("DisableTeleportEverything")){
+    TeleportEverything = 0
+}

@@ -1,0 +1,30 @@
+@name Jumper Naquadah Generator manager
+@inputs DronesInAir GeneratorActive GeneratorCountDown
+@outputs ToggleGenerator
+@persist Toggling
+@trigger 
+
+interval(1000)
+
+if (!Toggling){
+    if (GeneratorCountDown<=10&GeneratorActive){
+        timer("ToggleGen",50)
+        Toggling = 1
+    }
+    elseif (DronesInAir>0&!GeneratorActive){
+        Toggling = 1
+        timer("ToggleGen",50)
+    }
+    elseif (GeneratorActive&DronesInAir<=0){
+        Toggling = 1
+        timer("ToggleGen",50)
+    }
+}
+
+if (clk("ToggleGen")){
+    ToggleGenerator = 1
+    Toggling = 0
+}
+else{
+    ToggleGenerator = 0
+}

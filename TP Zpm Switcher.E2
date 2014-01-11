@@ -1,0 +1,48 @@
+@name TP Zpm Switcher
+@inputs Zpm1 Zpm2 Zpm3
+@outputs Dzpm1 Dzpm2 Dzpm3
+@persist Dzpm1 Dzpm2 Dzpm3 R1 R2 R3
+@trigger 
+
+interval(100)
+
+
+
+if (first()|duped()){
+    R1 = 0
+    R2 = 0
+    R3 = 0
+    Dzpm1 = 0
+    Dzpm2 = 1
+    Dzpm3 = 1
+}
+
+if (Zpm1>=1 & !R1){
+    timer("Dzpm1", 1000)
+    R1 = 1
+    Dzpm2 = 0
+}
+elseif (Zpm2>=1 & !R2){
+    timer("Dzpm2", 1000)
+    R2 = 1
+    Dzpm3 = 0
+}
+elseif (Zpm3>=1 & !R3){
+    timer("Dzpm3", 1000)
+    R3 = 1
+    Dzpm1 = 0
+}
+
+if (clk("Dzpm1")){
+    Dzpm1 = 1
+    R1 = 0
+}
+if (clk("Dzpm2")){
+    Dzpm2 = 1
+    R2 = 0
+}
+if (clk("Dzpm3")){
+    Dzpm3 = 1
+    R3 = 0
+}
+

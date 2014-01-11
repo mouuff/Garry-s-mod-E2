@@ -1,0 +1,72 @@
+@name Drone Defence
+@inputs Protect:entity Disable
+@persist Target:entity Drone:entity Model:string Range Reseting
+#ifdef stargateSystemType()
+@model models/Boba_Fett/props/orb_pedestal.mdl
+Model = "models/Boba_Fett/props/orb.mdl"
+#else
+@model models/props_combine/combine_mine01.mdl
+Model = "models/Roller.mdl"
+#endif
+
+interval(25)
+
+
+function void attackPos(Pos:vector, Prop:entity){
+    Prop:applyForce(((Pos-Prop:pos())*5)*Prop:mass())
+}
+function void gotoPos(Pos:vector, Prop:entity){
+    Prop:applyForce((((Pos-Prop:pos())*10) - Prop:vel())*Prop:mass())
+}
+
+if (first()|dupefinished()){
+    Range = 500
+    
+    Target = noentity()
+    
+    #ifdef propSpawn(string, number)
+    propSpawn(Model, 0)
+    hint("Spawned "+Model,5)
+    #else
+    hint("you have to spawn "+Model, 15)
+    #endif
+    findByModel(Model)
+    findSortByDistance(entity():pos())
+    Drone = find()
+    entity():soundPlay(0,0,"ambient/energy/spark6.wav")
+}
+if (!Drone:id()&!Reseting){
+    Reseting = 1
+    entity():soundPlay(0,0,"ambient/energy/zap3.wav")
+    timer("Reset",1000)
+}
+
+findExcludeEntity(owner())
+findExcludeEntity(Protect)
+findIncludeClass("player")
+findIncludeClass("npc_*")
+findInSphere(entity():pos(), Range)
+findSortByDistance(entity():pos())
+Target = find()
+
+if ((Target:pos():distance(entity():pos()) > Range)|(!Target:isAlive())){
+    Target = noentity()
+}
+
+if (!Disable){
+    if (toUnit("mph",Drone:vel():length())<20&Drone:pos():distance(Target:pos())<50){
+        #avoids looping around a player without killing him
+        gotoPos(entity():toWorld(vec(0,0,entity():boxSize()[3]+15)), Drone)
+    }
+    elseif (Target&!Target:inNoclip()&Drone){
+        attackPos(Target:pos()+vec(0,0,30),Drone)
+        entity():soundPlay(0,0,"ambient/energy/spark2.wav")
+    }
+    else{
+        gotoPos(entity():toWorld(vec(0,0,entity():boxSize()[3]+15)), Drone)
+    }
+}
+
+if (clk("Reset")){
+    reset()
+}

@@ -1,0 +1,46 @@
+@name TNT TP
+@inputs 
+@outputs Fire Jump TargetPos:vector TargetAngle:angle
+@persist TargetAngle:angle Target:entity Active Fire
+@trigger 
+
+interval(100)
+
+
+if (first()|duped()){
+    TargetAngle = entity():angles()
+    Target = entity()
+    Active = 0
+}
+
+runOnChat(1)
+
+if (chatClk(owner())){
+    LastSaid = owner():lastSaid():explode(" ")
+    Command = LastSaid[1, string]
+    Arg1 = LastSaid[2, string]
+    if (Command == "!kill"&Arg1){
+        Target = findPlayerByName(Arg1)
+        Active = 1
+    }
+}
+
+if (Active){
+    TargetPos = Target:pos()+vec(0,60,60)
+    timer("Jump", 100)
+    timer("Fire", 500)
+    Active = 0
+}
+
+if (clk("Fire")){
+    Fire = 1
+}
+else{
+    Fire = 0
+}
+if (clk("Jump")){
+    Jump = 1
+}
+else{
+    Jump = 0
+}

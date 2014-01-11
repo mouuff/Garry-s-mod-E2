@@ -1,0 +1,44 @@
+@name Stargate Manager
+@inputs AutoDial:string StargateDialingAddress:string
+@outputs DisableAutoClose IrisActive
+@persist Stargate:entity
+@trigger all
+
+function entity findStargateByAddress(Address:string){
+    findByClass("stargate_*")
+    Stargates = findToArray()
+    for (I=1, Stargates:count()){
+        Stargate = Stargates[I, entity]
+        if (Stargate:stargateAddress() == Address:explode("#")[1, string]){
+            break
+        }
+    }
+    return Stargate
+}
+
+interval(100)
+
+
+if (first()|duped()){
+    findByClass("stargate_*")
+    findSortByDistance(entity():pos())
+    Stargate = find()
+}
+
+if (AutoDial){
+    DisableAutoClose = 1
+    Stargate:stargateDial(AutoDial, 2)
+}
+else{
+    DisableAutoClose = 0
+}
+
+
+if (Stargate:stargateActive()){
+    DestStargate = findStargateByAddress(StargateDialingAddress)
+    if (DestStargate:stargateIrisActive()){
+        DestStargate:stargateIrisToggle()
+    }
+    IrisActive = DestStargate:stargateIrisActive()
+}
+

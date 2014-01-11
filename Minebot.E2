@@ -1,0 +1,167 @@
+@name minebot
+@inputs Disable
+@outputs Fire
+@persist Target:vector Ang:angle Fire WhiteList:array Chief:entity Zone:vector Range Action
+@trigger all
+@model models/XQM/Rails/trackball_1.mdl
+
+#this is beta bot updates are comming :)
+
+function void applyPos(Pos:vector, Prop:entity){
+    Prop:applyForce((((Pos-Prop:pos())*5) - Prop:vel())*Prop:mass())
+}
+function void applyAng(Target:vector,Prop:entity){
+    P = entity():elevation(Target)
+    Y = entity():bearing(Target)
+    R = entity():angles():roll()
+    Ang = -ang(P,Y,R)*Prop:mass()*2
+    Prop:applyAngForce(Ang + $Ang*3)
+}
+
+function entity threatInRange(Pos:vector,Range,WT:array){
+    findExcludeEntities(WT)
+    findIncludeClass("player")
+    findIncludeClass("npc_*")
+    findInSphere(Pos,Range)
+    findSortByDistance(Pos)
+    return find()
+}
+
+if (first()|dupefinished()){
+    Chief = owner()
+    WhiteList = array(owner())
+    Range = 750
+    Action = 1
+    #holo 1, 2 are borders
+    #holo 3 is eye
+    #holo 4 is the top
+    #holo 5 is the indicator
+    HoloNumber = 5
+    EdgeModel = "models/items/combine_rifle_ammo01.mdl"
+    for (H=1, HoloNumber){
+        holoCreate(H)
+    }
+    for (H=1,2){
+        holoModel(H,EdgeModel)
+        holoScale(H,holoScale(2)*2)
+        holoColor(H,vec(0,0,0))
+        holoAng(H,entity():angles():setPitch(90))
+        #0 for black
+    }
+    holoModel(3,"models/props_wasteland/light_spotlight01_lamp.mdl")
+    holoModel(4, "models/hunter/tubes/tubebend4x4x90.mdl")
+    holoModel(5, "models/weapons/w_rocket_launcher.mdl")
+    
+    holoScale(3, holoScale(3)/3)
+    holoScale(4, holoScale(4)/20)
+    holoScale(5, holoScale(5)/1.5)
+    
+    holoPos(1,entity():toWorld(vec(-10,15,0)))
+    holoPos(2,entity():toWorld(vec(-10,-15,0)))
+    holoPos(3, entity():toWorld(vec(13,0,-2)))
+    holoPos(4, entity():toWorld(vec(0,0,19)))
+    holoPos(5, entity():toWorld(vec(-15,0,2)))
+    
+    holoAng(4, entity():angles():setYaw(-90))
+    holoColor(4, vec(0,0,0))
+    holoMaterial(5, "hunter/myplastic")
+    
+    for (H=1, HoloNumber){
+        holoParent(H,entity())
+    }
+    #ifdef entity:propFreeze(number)
+    entity():propFreeze(0)
+    #else
+    hint("Unfreeze the prop",10)
+    #endif
+    hint("Add a wire turret on the drone eye",20)
+    entity():soundPlay(1,0,"radio/go.wav")
+    entity():soundPlay(2,0,"npc/dog/dog_combatmode_loop1.wav")
+}
+
+interval(50)
+runOnChat(1)
+
+if (!Disable){
+    #action is between 0 and 1, 0 means guard 1 mean protecting player
+    entity():isWeldedTo():setMass(0.0000001)
+    entity():isWeldedTo():setColor(0,0,0,0)
+    if (Action){
+        Player = threatInRange(Chief:pos(),Range,WhiteList)
+        if (Player:name()&Player:isAlive()){
+            holoColor(5,vec(255,0,0))#change color to red
+            applyPos(Player:toWorld(vec(100,0,110)),entity())
+            if (!Fire){
+                entity():soundPlay(0,0,"radio/ct_inpos.wav")
+            }
+            Fire = 1
+            Target = Player:pos()+vec(0,0,50)
+        }
+        else{
+            holoColor(5,vec(0,255,0))#change color to blue
+            applyPos(Chief:toWorld(vec(100,50,100)),entity())
+            if (Fire){
+                entity():soundPlay(0,0,"bot/clear.wav")
+            }
+            Fire = 0
+            Target = Chief:aimPos()
+        }
+        applyAng(Target,entity())
+    }
+    else{
+        applyPos(Zone+vec(0,0,100),entity())
+        Player = threatInRange(Chief:pos(),Range,WhiteList)
+        if (Player:name()&Player:isAlive()){
+            holoColor(5,vec(255,0,0))#change color to red
+            if (!Fire){
+                Fire = 1
+                entity():soundPlay(0,0,"radio/ct_inpos.wav")
+            }
+        }
+        else{
+            if (Fire){
+                Fire = 0
+                entity():soundPlay(0,0,"radio/clear.wav")
+            }
+            holoColor(5,vec(0,255,0))#change color to blue
+        }
+        applyAng(Player:pos()+vec(0,0,50),entity())
+    }
+    if (chatClk(owner())){
+        LastSaid = owner():lastSaid():explode(" ")
+        Command = LastSaid[1,string]:lower()
+        Arg1 = LastSaid[2,string]
+        Arg2 = LastSaid[3,string]
+        if (Command[1] == "!"){
+            hideChat(1)
+        }
+        if (Command=="!guard"){
+            Zone = owner():pos()
+            if (Arg1){
+                Range = Arg1:toNumber()
+            }
+            Action = 0
+            entity():soundPlay(0,0,"bot/im_going_to_wait_here.wav")
+        }
+        elseif(Command=="!protect"&Arg1){
+            Chief = findPlayerByName(Arg1)
+            if (Chief != owner()){
+                WhiteList[WhiteList:count()+1,entity] = findPlayerByName(Arg1)
+            }
+            else{
+                entity():soundPlay(0,0,"bot/ill_go_with_you.wav")
+            }
+            if (Arg2){
+                Range = Arg2:toNumber()
+            }
+            Action = 1
+        }
+        elseif (Command=="!reset"){
+            Chief = owner()
+            WhiteList = array(owner())
+            Range = 750
+            Action = 1
+            entity():soundPlay(0,0,"bot/aw_hell.wav")
+        }
+    }
+}

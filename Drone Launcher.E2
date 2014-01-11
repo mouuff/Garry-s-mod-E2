@@ -1,0 +1,69 @@
+@name Drone Launcher
+@inputs Launch Target:vector
+@outputs 
+@persist Drones:array MaxDrones
+#ifdef stargateSystemType()
+@model models/Madman07/drone_launcher/drone_launcher.mdl
+DroneModel = "models/zup/drone/drone.mdl"
+#else
+@model models/props_c17/TrapPropeller_Engine.mdl
+DroneModel = "models/Items/combine_rifle_ammo01.mdl"
+#endif
+
+function entity spawnDrone(){
+    Holo = randint(1,100)
+    soundPlay(0,0,"weapons/stinger_fire1.wav")
+    holoCreate(Holo)
+    holoModel(Holo,DroneModel)
+    NewDrone = propSpawn("models/props_c17/oildrum001_explosive.mdl",0)
+    holoPos(Holo,NewDrone:pos())
+    holoAng(Holo,NewDrone:angles())
+    holoParent(Holo,NewDrone)
+    NewDrone:setColor(vec(0,0,0),0)
+    NewDrone:setTrails(1,2,1,"models/props_lab/xencrystal_sheet",vec(255,255,255),100)
+    Drones[Drones:count()+1,entity] = NewDrone
+    return NewDrone
+}
+
+function void attackPos(Pos:vector, Prop:entity){
+    Prop:applyForce(((Pos-Prop:pos())*5)*Prop:mass())
+}
+function void gotoPos(Pos:vector, Prop:entity){
+    Prop:applyForce((((Pos-Prop:pos())*10) - Prop:vel())*Prop:mass())
+}
+
+
+interval(75)
+
+if (first()|duped()){
+    MaxDrones = 20
+    
+    #ifdef propSpawn(string,number)
+    hint("Server allows you to use this E2 :)",4)
+    #else
+    hint("Server don't allow the E2 to spawn drones, this E2 can't run",10)
+    #endif
+}
+
+
+for (I=1,Drones:count()){
+    Drone = Drones[I,entity]
+    if (!Drone){
+        Drones:remove(I)
+    }
+    #Drone:soundPlay(0,0,"weapons/drone_flyby.mp3")
+    elseif (Launch){
+        gotoPos(Target,Drone)
+    }
+}
+if (!Launch|removing()){
+    for (I=1,Drones:count()){
+        Drone = Drones[I,entity]
+        Drone:propBreak()
+    }
+}
+elseif (Drones:count()<MaxDrones){
+    attackPos(entity():toWorld(vec(0,0,1000000000)),spawnDrone())
+}
+
+

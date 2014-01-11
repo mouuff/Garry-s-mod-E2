@@ -1,0 +1,69 @@
+@name Ori Satelite
+@inputs Health ShieldStatus WeaponStatus LaserActive LaserPos:vector
+@outputs Shield Fire Active TargetPos:vector
+@persist Active LastHealth Target:entity
+@trigger 
+
+interval(300)
+runOnChat(1)
+
+if (first()|duped()){
+    Target = noentity()
+    Active = 1
+}
+
+
+if (chatClk(owner())){
+    LastSaid = owner():lastSaid():lower():explode(" ")
+    Command = LastSaid[1, string]
+    Arg1 = LastSaid[2, string]
+    if (Command == "!target" & Arg1){
+        Target = findPlayerByName(Arg1)
+        Active = 1
+    }
+    elseif (Command == "!fire"){
+        if (WeaponStatus == 100){
+            timer("Fire", 50)
+            print("Success")
+        }
+        else{
+            print("Failed the weapon is only charged at "+round(WeaponStatus)+"%")
+        }
+    }
+    elseif (Command == "!stat"){
+        print("Shield: "+round(ShieldStatus)+"%")
+        print("Health: "+round(Health))
+        print("Weapon load: "+round(WeaponStatus)+"%")
+    }
+}
+if (LastHealth > Health & !Shield){
+    if (ShieldStatus==100){
+        Shield = 1
+        print("Under Attack shield is now activated")
+        timer("ShieldOff", 120000)
+    }
+    else{
+        print("Under Attack and the shield can't be put on")
+    }
+}
+
+if (clk("ShieldOff")){
+    Shield = 0
+    print("Shield desactived")
+}
+if (clk("Fire")){
+    Fire = 1
+}
+else{
+    Fire = 0
+}
+
+if (LaserActive){
+    TargetPos = LaserPos
+}
+elseif (Target){
+    TargetPos = Target:pos()
+}
+
+
+LastHealth = Health

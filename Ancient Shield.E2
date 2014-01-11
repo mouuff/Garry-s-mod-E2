@@ -1,0 +1,33 @@
+@name Ancient Shield
+@inputs ShieldSize Disable
+@outputs ShieldActive
+@persist 
+
+interval(100)
+
+function number ancientShipInRange(ShieldSize:number){
+    ShieldPos = entity():isWeldedTo():pos()
+    findByModel("models/Iziraider/jumper/jumper.mdl")
+    findSortByDistance(ShieldPos)
+    Ships= findToArray()
+    for (Shipx=1, Ships:count()){
+        Ship = Ships[Shipx, entity]
+        ShieldSize += Ship:boxSize()[1]
+        Distance = ShieldPos:distance(Ship:pos())
+        if (Distance<ShieldSize & Distance>ShieldSize-100){
+            return 1
+        }
+    }
+    return 0
+}
+
+
+if (!Disable&ancientShipInRange(ShieldSize)){
+    ShieldActive = 0
+    timer("ActiveShield", 500)
+}
+
+if (clk("ActiveShield")){
+    ShieldActive = 1
+}
+

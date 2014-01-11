@@ -1,0 +1,55 @@
+@name To player by rings or stargates
+@persist RingOrigin:entity RingDest:entity
+#you need CAP and wiremod to run this script
+ 
+interval(500)
+ 
+function entity getClosestRing(Ent:entity){
+    EntPos = Ent:pos()
+    findByClass("ring_*")
+    findSortByDistance(EntPos)
+    Ring = find()
+    return Ring
+}
+ 
+function entity getClosestStargate(Ent:entity){
+    EntPos = Ent:pos()
+    findByClass("stargate_*")
+    findSortByDistance(EntPos)
+    Stargate = find()
+    return Stargate
+}
+ 
+runOnChat(1)
+ 
+if (chatClk(owner())){
+    LastSaid = owner():lastSaid():explode(" ")
+    Command = LastSaid[1, string]
+    Arg1 = LastSaid[2, string]
+    if (Command == "!ring" & Arg1){
+        RingOrigin = getClosestRing(owner())
+        RingDest = getClosestRing(findPlayerByName(Arg1))
+        RingOrigin:stargateRingDial(RingDest:stargateRingAddress())
+        timer("RingRecv", 700)#wait 0.7 sec before trying dial again
+    }
+    elseif (Command == "!gate" & Arg1){
+        OriginGate = getClosestStargate(owner())
+        DestGate = getClosestStargate(findPlayerByName(Arg1))
+        if (DestGate:stargateActive()){
+            DestGate:stargateClose()
+        }
+        if (DestGate:stargateGroup() == OriginGate:stargateGroup()){
+            ToDial = DestGate:stargateAddress()
+        }
+        else{
+            print(DestGate:stargateGroup())
+            ToDial = DestGate:stargateAddress()+DestGate:stargateGroup():replace("@",""):replace("#","")
+        }
+        print("Dialing : " +DestGate:stargateName())
+        OriginGate:stargateDial(ToDial, 1)
+    }
+}
+ 
+if (clk("RingRecv")){
+    RingDest:stargateRingDial(RingOrigin:stargateRingAddress())
+}
