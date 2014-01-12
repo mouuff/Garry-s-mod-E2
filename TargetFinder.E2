@@ -18,7 +18,12 @@ if (first()|duped()|!HoldTarget){
     Target = Players[Choice, entity]
     TargetName=Target:name()
     if ((LastTargetName != TargetName) & TargetName & !HideChat){
-        print("Targeting: "+TargetName)
+        if (HoldTarget){
+            print("Locked: "+TargetName)
+        }
+        else{
+            print("Targeting: "+TargetName)
+        }
     }
 }
 
@@ -28,7 +33,12 @@ if (~NextTarget & NextTarget & HoldTarget){
     Target = Players[(Choice%Players:count()), entity]
     TargetName=Target:name()
     if ((LastTargetName != TargetName) & TargetName & !HideChat){
-        print("Targeting: "+TargetName)
+        if (HoldTarget){
+            print("Locked: "+TargetName)
+        }
+        else{
+            print("Targeting: "+TargetName)
+        }
     }
 }
 elseif (~PrevTarget & $PrevTarget & HoldTarget){
@@ -37,11 +47,22 @@ elseif (~PrevTarget & $PrevTarget & HoldTarget){
     Target = Players[(Choice%Players:count()), entity]
     TargetName=Target:name()
     if ((LastTargetName != TargetName) & TargetName & !HideChat){
-        print("Targeting: "+TargetName)
+        if (HoldTarget){
+            print("Locked: "+TargetName)
+        }
+        else{
+            print("Targeting: "+TargetName)
+        }
     }
 }
 
-TargetPos = Target:pos()
+if (HoldTarget&~HoldTarget){
+    print("Locked: "+Target:name())
+}
+
+if (Target:pos() != vec(0,0,0)){
+    TargetPos = Target:pos()
+}
 
 X = TargetPos:x()
 Y = TargetPos:y()
