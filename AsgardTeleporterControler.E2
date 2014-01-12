@@ -2,7 +2,7 @@
 @outputs Origin:vector Dest:vector TeleportEverything Send
 @persist SavedPos:table WhiteList:array SafeZoneRange SafeZonePos:vector SafeActive TeleportEverything
 
-interval(1000)
+interval(250)
 runOnChat(1)
 
 function entity findStargateByAddress(Address:string){
@@ -131,7 +131,7 @@ if (chatClk(owner())){
     }
     elseif (Command=="!base"){
         if (Arg1){
-            asgardTeleport(findPlayerByName(Arg1):pos(),entity():isWeldedTo():toWorld(vec(-70,0,0)),0)
+            asgardTeleport(findPlayerByName(Arg1):pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
         }
         else{
             asgardTeleport(owner():pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
