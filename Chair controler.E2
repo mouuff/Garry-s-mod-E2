@@ -1,53 +1,59 @@
 @name Chair controler
-@inputs Forward Backward Right Left Speed Fire Bearing Elevation ChangePlayer Player:entity Alert TargetClosest S:wirelink Shield Power
-@outputs CamPos:vector CamAng:angle Target:entity
+@inputs Active Forward Backward Right Left Speed Bearing Elevation ChangePlayer TargetClosestPlayer LockCamOnTarget
+@inputs S:wirelink Shield AtlantisShield Power
+@outputs CamPos:vector AimPos:vector CamAng:angle Target:entity
 @persist CamPos:vector CamAng:angle N Failed Target:entity
-@trigger 
 
 interval(50)
 
 if (first()|duped()){
-    S:egpText(1, "Target: ", vec2(256,256))
-    S:egpText(2, "Watching: ", vec2(256,220))
-    S:egpText(3, toString(Shield), vec2(256,180))
-    S:egpText(4, toString(Power), vec2(256,140))
-
-    Failed = 0
-    CamPos = Player:pos()
-    holoCreate(1)
-    holoModel(1,"models/Gibs/HGIBS.mdl")
-    holoPos(1, Player:pos())
+    S:egpText(1, "", vec2(256,256))
+    S:egpText(2, "", vec2(256,220))
+    S:egpText(3, "", vec2(256,180))
+    S:egpText(4, "", vec2(256,140))
+    S:egpText(5, "", vec2(256,120))
     
-    holoMaterial(1," models/props_c17/frostedglass_01a")
+    Failed = 0
+    CamPos = entity():pos()
+    holoCreate(1)
+    holoModel(1,"torus")
+    holoColor(1,vec(0,0,0),0)
+    holoPos(1, vec(0,0,0))
     N = 0
 }
+
+
 
 function void setPos(V:vector){
     holoPos(1, holoEntity(1):toWorld(V))
 }
 
-if (Forward){
-    if (Speed){
-        setPos(vec(50,0,0))
+if (LockCamOnTarget&Target){
+    holoPos(1, Target:toWorld(vec(0,0,100)))
+}
+else{
+    if (Forward){
+        if (Speed){
+            setPos(vec(50,0,0))
+        }
+        else{
+            setPos(vec(7,0,0))
+        }
     }
-    else{
-        setPos(vec(7,0,0))
+    elseif (Backward){
+        setPos(vec(-7,0,0))
     }
-}
-elseif (Backward){
-    setPos(vec(-7,0,0))
-}
-if (Left){
-    setPos(vec(0,5,0))
-}
-elseif(Right){
-    setPos(vec(0,-5,0))
+    if (Left){
+        setPos(vec(0,5,0))
+    }
+    elseif(Right){
+        setPos(vec(0,-5,0))
+    }
 }
 
 if ((~ChangePlayer&ChangePlayer)|Failed){
     findByClass("player")
-    findExcludeEntity(Player)
-    findSortByDistance(Player:pos())
+    findSortByDistance(entity():pos())
     P = findResult((N%findCount())+1)
     if (P:name() != ""){
         S:egpText(2, "Watching: "+P:name(), vec2(256,220))
@@ -59,10 +65,8 @@ if ((~ChangePlayer&ChangePlayer)|Failed){
     }
     N+=1
 }
-if (Alert&~Alert){
-    holoEntity(1):soundPlay(0,0,"common/stuck1.wav")
-}
-if (TargetClosest&~TargetClosest){
+
+if (TargetClosestPlayer&~TargetClosestPlayer){
     findByClass("player")
     findSortByDistance(holoEntity(1):pos())
     Target = find()
@@ -74,9 +78,13 @@ holoAng(1,ang(vec(-Elevation, Bearing, 0)))
 CamAng = holoEntity(1):angles()
 CamPos = holoEntity(1):pos()
 
+AimPos = rangerOffset(100000,CamPos,holoEntity(1):forward()):pos()
+
 S:egpText(3, "Shields: "+toString(round(Shield))+"%", vec2(256,180))
 S:egpText(4, "Power: "+toString(round(Power))+"%", vec2(256,140))
+S:egpText(5, "Atlantis Shield: "+toString(AtlantisShield), vec2(256,100))
 
 #S:egpBox(10,vec2(600,500),vec2(100,100))
 #S:egpMaterial(10,"models/props_combine/tprings_globe")
+
 
