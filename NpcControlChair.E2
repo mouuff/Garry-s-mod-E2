@@ -1,0 +1,109 @@
+@name Npc control chair
+@inputs S:wirelink Forward AllGoto Hate Bearing Elevation
+@inputs Fire TakeControl ChairActive SwitchNpc Rage
+@outputs CamPos:vector CamAng:angle ActiveCam
+@persist Npc:entity Npcs:array Hated:entity CamPos:vector CamAng:angle C Raging
+#ifdef stargateSystemType()
+@model models/Madman07/com_device/device.mdl
+#else
+@model models/Gibs/HGIBS.mdl
+#endif
+
+interval(50)
+
+if (first()|duped()){
+    C = 1
+    S:egpClear()
+    Npc = noentity()
+    Raging = 0
+    holoCreate(1)
+    holoCreate(2)
+    holoModel(2, "sphere")
+    holoScale(2,vec(0.4,0.4,0.4))
+    holoAng(2,ang(vec(90,0,0)))
+    holoColor(1,vec(0,0,0),0)
+    S:egpText(1, "", vec2(256,120))
+    S:egpText(2, "", vec2(256,140))
+}
+
+if (Npc){
+    ActiveCam = 1
+    S:egpSetText(1,"Health: "+Npc:health():toString())
+    holoAng(1,ang(vec(-Elevation, Bearing, 0)))
+    
+    CamPos = Npc:pos()+vec(0,0,Npc:height()+10)
+    CamAng = holoEntity(1):angles()
+    
+    HA = rangerOffset(100000,CamPos,holoEntity(1):forward())
+    
+    holoPos(2,HA:pos())
+    
+    #Npc:npcFace(HA)
+    
+    if (Forward&~Forward){
+        Npc:npcGoRun(HA:pos())
+    }
+    if (AllGoto&~AllGoto){
+        for (I=1,Npcs:count()){
+            Npcs[I,entity]:npcGoRun(HA:pos())
+        }
+    }
+    if (Fire&~Fire){
+        Npc:npcSetTarget(HA:entity())
+        Npc:npcShoot()
+    }
+    
+    if (Hate&~Hate){
+        Npc:npcRelationship(Hated,"neutral",500)
+        Hated = HA:entity()
+        S:egpSetText(2,"Hating: "+Hated:name())
+        Npc:npcRelationship(Hated,"hate",999)
+    }
+    if (Rage&~Rage){
+        findByClass("player")
+        findSortByDistance(entity():pos())
+        Players = findToArray()
+        if (Raging){
+            print("Npcs not mad anymore")
+            Raging = 0
+            for (N=1,Npcs:count()){
+                for (P=1,Players:count()){
+                    Npcs[N,entity]:npcRelationship(Players[P,entity],"neutral",500)
+                }
+            }
+        }
+        else{
+            print("Npc getting real mad")
+            Raging = 1
+            findByClass("player")
+            findSortByDistance(entity():pos())
+            Players = findToArray()
+            for (N=1,Npcs:count()){
+                for (P=1,Players:count()){
+                    Npcs[N,entity]:npcRelationship(Players[P,entity],"hate",500)
+                }
+                Npcs[N,entity]:npcRelationship(owner(),"love",100)
+            }
+            
+        }
+    }
+}
+else{
+    ActiveCam = 0
+    S:egpSetText(1,"No npc found")
+    S:egpSetText(2,"")
+}
+if (!ChairActive){
+    ActiveCam = 0
+    findByClass("npc_*")
+    findSortByDistance(entity():pos())
+    Npcs = findToArray()
+    Npc = Npcs[C,entity]
+}
+if (SwitchNpc&~SwitchNpc){
+    C = (C%Npcs:count())+1
+    Npc = Npcs[C,entity]
+}
+
+
+
