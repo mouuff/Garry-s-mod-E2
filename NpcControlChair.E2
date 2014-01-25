@@ -82,7 +82,7 @@ if (Npc){
                 for (P=1,Players:count()){
                     Npcs[N,entity]:npcRelationship(Players[P,entity],"hate",500)
                 }
-                Npcs[N,entity]:npcRelationship(owner(),"love",100)
+                Npcs[N,entity]:npcRelationship(owner(),"love",900)
             }
             
         }
@@ -96,6 +96,7 @@ else{
 if (!ChairActive){
     ActiveCam = 0
     findByClass("npc_*")
+    findIncludePlayerProps(owner())
     findSortByDistance(entity():pos())
     Npcs = findToArray()
     Npc = Npcs[C,entity]
