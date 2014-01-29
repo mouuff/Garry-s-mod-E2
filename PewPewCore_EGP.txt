@@ -1,0 +1,29 @@
+@name PewPewCore EGP
+@inputs E:wirelink HealthPercent Health
+@outputs Alert
+@persist Alert
+@trigger 
+
+interval(500)
+
+if (first()|dupefinished()){
+    E:egpClear()
+    E:egpCircle(1,vec2(256,256),vec2(200,200))
+    E:egpCircle(2,vec2(256,256),vec2(10,10))
+    E:egpColor(2, vec(0,0,0))
+    
+    E:egpText(3,"Health: ",vec2(20,20))
+    E:egpColor(3, vec(100,100,100))
+    E:egpSize(3,40)
+}
+
+E:egpSetText(3,"Health: "+toString(Health))
+
+E:egpSize(2,vec2(HealthPercent*1.8,HealthPercent*1.8))
+
+if (HealthPercent<30){
+    Alert = 1
+}
+else{
+    Alert = 0
+}

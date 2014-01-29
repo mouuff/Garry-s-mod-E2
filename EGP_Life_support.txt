@@ -1,0 +1,46 @@
+@name EGP Life support
+@inputs E:wirelink MaxH22 H22 MaxPower Power MaxAir Air MaxWater Water
+@outputs 
+@persist 
+@trigger 
+
+interval(500)
+
+if (first()|dupefinished()){
+    E:egpClear()
+    E:egpCircle(1,vec2(130,120),vec2(80,80))
+    E:egpCircle(2,vec2(370,120),vec2(80,80))
+    E:egpCircle(3,vec2(370,350),vec2(80,80))
+    E:egpCircle(4,vec2(130,350),vec2(80,80))
+    
+    E:egpText(5,"Water: 0%",vec2(60,110))
+    E:egpColor(5, vec(0,0,0))
+    E:egpSize(5,30)
+    
+    E:egpText(6,"Air: 0%",vec2(320,110))
+    E:egpColor(6, vec(0,0,0))
+    E:egpSize(6,30)
+    
+    E:egpText(7,"2H20: 0%",vec2(310,330))
+    E:egpColor(7, vec(0,0,0))
+    E:egpSize(7,30)
+    
+    E:egpText(8,"Power: 0%",vec2(60,330))
+    E:egpColor(8, vec(0,0,0))
+    E:egpSize(8,30)
+    
+    E:egpText(9,"Title",vec2(210,20))
+    E:egpSize(9,40)
+}
+
+#[
+5 water
+6 air
+7 Heavy Water
+8 Power
+]#
+
+E:egpSetText(5,"Water: "+toString(round(Water/MaxWater*100))+"%")
+E:egpSetText(6,"Air: "+toString(round(Air/MaxAir*100))+"%")
+E:egpSetText(7,"2H2O: "+toString(round(H22/MaxH22*100))+"%")
+E:egpSetText(8,"Power: "+toString(round(Power/MaxPower*100))+"%")

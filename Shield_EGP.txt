@@ -1,0 +1,43 @@
+@name Shield EGP
+@inputs E:wirelink Shield AddStrength SubStrength
+@outputs Strength Alert
+@persist Strength Alert
+@trigger 
+
+interval(500)
+
+if (first()|dupefinished()){
+    Strength = 3
+    E:egpClear()
+    E:egpCircle(1,vec2(256,256),vec2(200,200))
+    E:egpCircle(2,vec2(256,256),vec2(10,10))
+    E:egpColor(2, vec(0,0,0))
+    
+    E:egpText(3,"Shield: 0%",vec2(20,20))
+    E:egpColor(3, vec(100,100,100))
+    E:egpSize(3,30)
+    
+    E:egpText(4,"Strength: 0",vec2(350,470))
+    E:egpColor(4, vec(100,100,100))
+    E:egpSize(4,30)
+}
+
+E:egpSetText(4,"Strength: "+toString(Strength))
+E:egpSetText(3,"Shield: "+toString(Shield)+"%")
+
+E:egpSize(2,vec2(Shield*1.8,Shield*1.8))
+
+if (AddStrength&~AddStrength&Strength<5){
+    Strength += 1
+    entity():soundPlay(0,0,"vehicles/tank_readyfire1.wav")
+}
+if(SubStrength&~SubStrength&Strength>1){
+    Strength -= 1
+    entity():soundPlay(0,0,"vehicles/digger_grinder_stop1.wav")
+}
+if (Shield<30){
+    Alert = 1
+}
+else{
+    Alert = 0
+}
