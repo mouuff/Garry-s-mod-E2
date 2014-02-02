@@ -1,0 +1,139 @@
+@name Goauld Computer
+@inputs E:wirelink Emitter:entity ShieldPercent SubStrength AddStrength PowerPercent MaxHull Hull
+@outputs Alert Strength
+@persist Pass Strength
+@trigger 
+
+
+interval(100)
+
+
+if (first()|dupefinished()|Pass%100==99){
+    if (first()|duped()){
+        #dont remove persisting vars on reload
+        entity():soundPlay(0,0,"ambient/energy/zap2.wav")
+        Strength = 1
+    }
+    Pass = 1
+    
+    holoCreate(1)
+    holoPos(1,Emitter:toWorld(vec(0,1,70)))
+    holoAng(1,Emitter:angles())
+    holoScale(1,vec(11,0.01,10.5))
+    holoModel(1,"prism")
+    holoColor(1,vec(60,60,0))
+    holoParent(1,Emitter)
+    
+    E:egpClear()
+    E:egpTriangleOutline(1,vec2(256,0),vec2(0,512),vec2(512,512))
+    E:egpSize(1,7)
+    E:egpColor(1,vec(255,191,0))
+    
+    E:egpTriangle(2,vec2(256,12),vec2(12,500),vec2(500,500))
+    E:egpColor(2,vec(0,161,255))
+    E:egpMaterial(2,"models/props_combine/stasisshield_sheet")
+    
+    E:egpTriangleOutline(3,vec2(256,100),vec2(100,450),vec2(420,450))
+    E:egpSize(3,7)
+    E:egpColor(3,vec(255,191,0))
+    
+    #long middle line
+    E:egpLine(4,vec2(185,256),vec2(330,256))
+    E:egpSize(4,7)
+    E:egpColor(4,vec(255,191,0))
+    
+    #small top left line
+    E:egpLine(5,vec2(190,256),vec2(170,258))
+    E:egpSize(5,7)
+    E:egpColor(5,vec(255,191,0))
+    
+    #left long line
+    E:egpLine(6,vec2(175,255),vec2(120,372))
+    E:egpSize(6,7)
+    E:egpColor(6,vec(255,191,0))
+    
+    #small bottom line
+    E:egpLine(7,vec2(127,392),vec2(118,370))
+    E:egpSize(7,7)
+    E:egpColor(7,vec(255,191,0))
+    
+    
+    E:egpText(9,"no hull data",vec2(215,210))
+    
+    E:egpText(10,"Welcome on anubis computer",vec2(120,430))
+    
+    E:egpCircle(11,vec2(295,350),vec2(50,50))
+    E:egpMaterial(11,"models/props_combine/tprings_globe")
+    
+    E:egpCircle(12,vec2(295,350),vec2(48,48))
+    E:egpMaterial(12,"models/props_lab/xencrystal_sheet")
+    
+    E:egpText(13,"Strength 1",vec2(256,324))
+    E:egpText(8,"No shield data",vec2(260,310))
+    E:egpColor(13,vec(255,191,0))
+    E:egpColor(8,vec(255,191,0))
+    
+    E:egpText(14,"No power",vec2(210,260))
+    
+    E:egpBoxOutline(15,vec2(256,280),vec2(100,11))
+    E:egpSize(15,7)
+    E:egpColor(15,vec(255,191,0))
+    E:egpAlpha(15,100)
+    
+    E:egpLine(16,vec2(209,280),vec2(210,280))
+    E:egpSize(16,7)
+    E:egpSize(16,7)
+    E:egpColor(16,vec(255,191,0))
+    E:egpAlpha(16,100)
+    
+    for (X=8,14){
+        E:egpFont(X,"Anquietas")
+        E:egpSize(X,15)
+    }
+}
+Pass += 1
+
+#[
+8 shield
+9 health
+10 info
+13 shield strength
+14 power
+16 power line   
+]#
+if (ShieldPercent!=0){
+    E:egpSetText(8,"Shield "+toString(round(ShieldPercent)))
+    E:egpSize(12,vec2(ShieldPercent,ShieldPercent)/2.1)
+}
+
+if (AddStrength&~AddStrength&Strength<5){
+    Strength += 1
+    entity():soundPlay(0,0,"vehicles/tank_readyfire1.wav")
+}
+if(SubStrength&~SubStrength&Strength>-5){
+    Strength -= 1
+    entity():soundPlay(0,0,"vehicles/digger_grinder_stop1.wav")
+}
+if (Strength!=~Strength){
+    E:egpSetText(13,"Strength "+toString(Strength))
+}
+if (PowerPercent!=~PowerPercent){
+    E:egpSetText(14,"Power "+toString(round(PowerPercent))+" percent")
+    E:egpLine(16,vec2(209,280),vec2(PowerPercent*0.96+209,280))
+}
+if (Hull!=~Hull){
+    E:egpSetText(9,"Hull "+toString(round(Hull/MaxHull))+" percent")
+}
+
+
+if (ShieldPercent<30){
+    Alert = 1
+    E:egpSetText(10,"Last Alert: Shield critical")
+}
+else{
+    Alert = 0
+}
+
+
+
+

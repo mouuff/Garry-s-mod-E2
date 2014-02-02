@@ -1,0 +1,20 @@
+@name Toggle
+@inputs A
+@outputs On
+@persist On
+@trigger 
+
+interval(100)
+
+if (first()|duped()){
+    On = 0
+}
+
+if (A&~A&On){
+    soundPlay(0,0,"buttons/combine_button5.wav")
+    On = 0
+}
+elseif (A&~A&!On){
+    soundPlay(0,0,"buttons/combine_button2.wav")
+    On = 1
+}

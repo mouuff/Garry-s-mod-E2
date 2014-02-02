@@ -1,0 +1,63 @@
+@name EGP radar hud
+@inputs E:wirelink
+@persist Players:array I Center
+
+interval(50)
+
+
+if (first()|dupefinished()|I%100==99){
+    I=0
+    Center = 180
+    E:egpClear()
+    
+    E:egpCircle(1,vec2(Center,Center),vec2(150,150))
+    E:egpColor(1,vec(0,0,0))
+    E:egpAlpha(1,150)
+    
+    E:egpCircle(2,vec2(Center,Center),vec2(4,4))
+    E:egpColor(2,vec(33,255,0))
+
+    
+    holoCreate(1)
+    holoColor(1,vec(0,0,0),0)
+}
+I+=1
+
+
+holoPos(1,owner():pos())
+holoAng(1,owner():angles()+ang(vec(180,90,0)))
+Me = holoEntity(1)
+
+
+findByClass("player")
+findSortByDistance(Me:pos())
+Players = findToArray()
+
+for (X=1, Players:count()){
+    Player = Players[X,entity]
+    PID = Player:id()
+    RawWeapon = Player:weapon():model():explode("/")
+    Weapon = RawWeapon[RawWeapon:count(),string]:explode(".")[1,string]
+    if (Player:pos():distance(Me:pos())<1500&Player!=owner()){
+        
+        Vec = Me:toLocal(Player:pos())/10
+        Vec2 = vec2(Vec:x()+Center,Vec:y()+Center)
+        
+        E:egpCircle(PID*15,Vec2,vec2(3,3))
+        E:egpColor(PID*15,vec(255,0,0))
+        
+        E:egpText(PID*30,Player:name(),Vec2+vec2(5,5))
+        E:egpSize(PID*30,15)
+        
+        E:egpText(PID*45,"Health: "+toString(Player:health()),Vec2+vec2(10,15))
+        E:egpSize(PID*45,13)
+        
+        E:egpText(PID*60,"Weapon: "+Weapon,Vec2+vec2(10,25))
+        E:egpSize(PID*60,13)
+    }
+}
+
+
+
+
+
