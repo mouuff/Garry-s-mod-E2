@@ -1,0 +1,8 @@
+@name Redial
+@model models/Boba_Fett/portable_dhd/portable_dhd.mdl
+
+interval(100)
+Stargate = entity():isWeldedTo()
+if (!Stargate:stargateActive()){
+    Stargate:stargateDial("GSPX21",2)
+}

@@ -1,0 +1,127 @@
+@name Target Finder v2
+@inputs E:wirelink ChairMode User:entity
+@outputs Target:entity Fire
+@persist Target:entity Fire
+@persist Entities:array ColorBox FireCircle Clicking U:entity
+@trigger 
+
+
+interval(10)
+
+if (first()|dupefinished()){
+    Fire = 0
+    ColorBox = 0
+    Clicking = 0
+    
+    timer("reload_entities",0)
+    timer("reset",0)
+}
+
+#print(E:egpCursor(U))
+
+if (User){
+    U = User
+}
+else{
+    U = owner()
+}
+
+if (ChairMode){
+    E:egpTriangle(1337,E:egpCursor(U),E:egpCursor(U)+vec2(10,15),E:egpCursor(U)+vec2(0,15))
+    Click = U:keyAttack1()
+}
+else{
+    E:egpRemove(0)
+    Click = U:keyUse()
+}
+
+if (Click&(E:egpCursor(U):x()!=-1)){
+    for (I=1,Entities:count()){
+        Entity = Entities[I,entity]
+        Xbox = I+20
+        Xname = I+50
+        if (inrange(E:egpCursor(U),vec2(50,50+50*I),vec2(470,90+50*I))){
+            E:egpColor(ColorBox,vec(255,255,255))
+            ColorBox = Xbox
+            E:egpColor(Xbox,vec(255,0,0))
+            Target = Entity
+        }
+    }
+    if (inrange(E:egpCursor(U),vec2(400,25),vec2(450,75))){
+        if (Fire&!Clicking){
+            Fire = 0
+            E:egpColor(FireCircle,vec(255,0,0))
+            entity():soundPlay(0,0,"npc/scanner/combat_scan3.wav")
+        }
+        elseif(!Clicking){
+            Fire = 1
+            E:egpColor(FireCircle,vec(33,255,0))
+            entity():soundPlay(0,0,"npc/scanner/combat_scan2.wav")
+        }
+        Clicking = 1
+    }
+}
+else{
+    Clicking = 0
+}
+
+
+if (clk("reload_entities")){
+    findByClass("player")
+    findSortByDistance(entity():pos())
+    Entities = findToArray()
+    for (I=1,Entities:count()){
+        Entity = Entities[I,entity]
+        Xbox = I+20
+        Xname = I+50
+        Xrange = I+80
+        E:egpRoundedBoxOutline(Xbox,vec2(256,I*45+80),vec2(420,35))
+        E:egpText(Xname,Entity:name(),vec2(60,I*45+70))
+        if (Entity:isAdmin()|Entity:isSuperAdmin()){
+            E:egpColor(Xname,vec(255,255,0))
+        }
+        E:egpText(Xrange,"range: "+toString(round(Entity:pos():distance(entity():pos()))),vec2(350,I*45+70))
+        E:egpColor(ColorBox,vec(255,0,0))
+    }
+    
+    timer("reload_entities",1000)
+}
+if (clk("reset")){
+    E:egpClear()
+    Corner = 2
+    TitleBox = 3
+    Background = 4
+    Title = 5
+    FireCircle = 6
+    FireCircleCorner = 7
+    
+    E:egpBox(Background,vec2(256,256),vec2(512,512))
+    E:egpColor(Background,vec(20,20,200))
+    
+    E:egpBoxOutline(Corner,vec2(256,290),vec2(470,400))
+    
+    E:egpBoxOutline(TitleBox,vec2(200,50),vec2(350,50))
+    
+    E:egpText(Title,"Weapons Computer",vec2(70,35))
+    E:egpSize(Title,28)
+    
+    E:egpCircle(FireCircleCorner,vec2(430,50),vec2(29,29))
+    E:egpColor(FireCircleCorner,vec(0,0,0))
+    
+    E:egpCircle(FireCircle,vec2(430,50),vec2(25,25))
+    if (Fire){
+        E:egpColor(FireCircle,vec(33,255,0))
+    }
+    else{
+        E:egpColor(FireCircle,vec(255,0,0))
+    }
+
+    
+    timer("reset",10000)
+}
+
+
+
+
+
+

@@ -1,0 +1,46 @@
+@name Tardis taxi
+@outputs Demat Pos:vector
+@persist Demat
+
+function vector getSafePos(Pos:vector){
+    holoCreate(1,Pos)
+    holoColor(1,vec(0,0,0),0)
+    for (X=0,8){
+        holoAng(1,ang(vec(0,X*45,0)))
+        R = rangerOffset(300,Pos,holoEntity(1):forward())
+        if (R:distance()>=50){
+            Vec = R:position()-holoEntity(1):toLocal(R:position())/2
+            return Vec
+        }
+    }
+    return Pos+vec(50,0,0)
+}
+
+
+runOnChat(1)
+interval(500)
+
+if (first()|duped()){
+    Demat = 0
+}
+
+if (chatClk(owner())){
+    LastSaid = owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Arg1 = LastSaid[2,string]
+    if (Command == "!taxi"){
+        Player = findPlayerByName(Arg1)
+        if (Player){
+            Pos = getSafePos(Player:pos())
+            Demat = 1
+            timer("Remat",500)
+        }
+        else{
+            hint("No player found",10)
+        }
+    }
+}
+if (clk("Remat")){
+    Demat = 0
+}
+
