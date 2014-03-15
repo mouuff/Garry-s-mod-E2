@@ -1,0 +1,206 @@
+@name Shield management
+@inputs E:wirelink ShieldPercent ChairMode
+@outputs Activate Strength Alert
+@persist Activate Clicking U:entity History ProgressBar HistoryTxt:string Strength Title2 Title3 ActivateCircle Warning
+@trigger 
+
+interval(100)
+
+if (first()|dupefinished()){
+    Activate = 0
+    Strength = 3
+    U = owner()
+    HistoryTxt = "|"
+    timer("Get",1000)
+    timer("reload_egp",0)
+}
+
+
+
+if(owner():keyUse()){print(E:egpCursor(owner()))}
+
+
+if (ChairMode){
+    E:egpTriangle(1337,E:egpCursor(U),E:egpCursor(U)+vec2(10,15),E:egpCursor(U)+vec2(0,15))
+    Click = U:keyAttack1()
+}
+else{
+    E:egpRemove(0)
+    Click = U:keyUse()
+}
+
+if (Click&(E:egpCursor(U):x()!=-1)){
+    if (inrange(E:egpCursor(U),vec2(81,394),vec2(125,434))){
+        if (Activate&!Clicking){
+            Activate = 0
+            entity():soundPlay(0,0,"buttons/button16.wav")
+            E:egpColor(ActivateCircle,vec(255,0,0))
+        }
+        elseif(!Clicking){
+            Activate = 1
+            entity():soundPlay(0,0,"buttons/button17.wav")
+            E:egpColor(ActivateCircle,vec(33,255,0))
+        }
+    }
+    elseif (inrange(E:egpCursor(U),vec2(200,366),vec2(316,397))&Strength<5&!Clicking){
+        Strength += 1
+        entity():soundPlay(0,0,"npc/scanner/combat_scan4.wav")
+        timer("Get",0)
+    }
+    elseif (inrange(E:egpCursor(U),vec2(203,408),vec2(314,435))&Strength>-5&!Clicking){
+        Strength -= 1
+        entity():soundPlay(0,0,"npc/scanner/combat_scan5.wav")
+        timer("Get",0)
+    }
+    
+    Clicking = 1
+}
+else{
+    Clicking = 0
+}
+
+
+if (clk("reload_egp")){
+    E:egpClear()
+    Title = 1
+    LongTitleLine = 2
+    LeftTitleLine = 3
+    RightTitleLine = 4
+    Background = 5
+    History = 6
+    ConsoleBorder = 7
+    ShieldPercentText = 8
+    Feet = 9
+    
+    ProgressBarOut = 10
+    ProgressBar = 11
+    
+    Title2 = 12
+    Title3 = 13
+    
+    CommandBorder = 14
+    
+    ActivateCircleCorner = 15
+    ActivateCircle = 16
+    
+    AddTxt = 17
+    SubTxt = 18
+    
+    AddBox = 19
+    SubBox = 20
+    
+    ControlTxt = 21
+    
+    Warning = 22
+    
+    E:egpBox(Background,vec2(256,256),vec2(512,512))
+    E:egpColor(Background,vec(40,40,40))
+    
+    E:egpLine(LeftTitleLine,vec2(62,0),vec2(100,75))
+    E:egpLine(LongTitleLine,vec2(100,75),vec2(400,75))
+    E:egpLine(RightTitleLine,vec2(400,75),vec2(450,0))
+    
+    E:egpText(Title,"Shield manager",vec2(145,25))
+    E:egpSize(Title,30)
+    
+    E:egpRoundedBoxOutline(ConsoleBorder,vec2(256,220),vec2(430,230))
+    E:egpRoundedBoxOutline(CommandBorder,vec2(256,400),vec2(400,100))
+    
+    E:egpText(ShieldPercentText,"Shield status",vec2(55,115))
+    E:egpSize(ShieldPercentText,20)
+    
+    E:egpText(Title2,"Field force:",vec2(60,135))
+    
+    E:egpText(Title3,"Strength:",vec2(60,200))
+    
+    E:egpLine(Feet,vec2(0,490),vec2(512,490))
+    
+    E:egpBoxOutline(ProgressBarOut,vec2(256,180),vec2(350,30))
+    
+    E:egpLine(ProgressBar,vec2(82,180),vec2(82,180))
+    E:egpSize(ProgressBar,23)
+    
+    E:egpText(History,"0",vec2(0,495))
+    
+    E:egpCircle(ActivateCircleCorner,vec2(100,415),vec2(29,29))
+    E:egpColor(ActivateCircleCorner,vec(0,0,0))
+    
+    E:egpCircle(ActivateCircle,vec2(100,415),vec2(25,25))
+    if (Activate){
+        E:egpColor(ActivateCircle,vec(33,255,0))
+    }
+    else{
+        E:egpColor(ActivateCircle,vec(255,0,0))
+    }
+    
+    E:egpRoundedBox(AddBox,vec2(256,380),vec2(120,30))
+    E:egpColor(AddBox,vec(75,60,50))
+    E:egpText(AddTxt,"Add Strength",vec2(210,370))
+    
+    E:egpRoundedBox(SubBox,vec2(256,420),vec2(120,30))
+    E:egpColor(SubBox,vec(75,60,50))
+    E:egpText(SubTxt,"Sub Strength",vec2(210,410))
+    
+    E:egpText(ControlTxt,"Shield control",vec2(70,360))
+    E:egpSize(ControlTxt,20)
+    
+    E:egpText(Warning,"No warnings",vec2(70,300))
+    E:egpSize(Warning,25)
+    
+    for (I=1,10){
+        E:egpBoxOutline(I+50,vec2(70+I*30,250),vec2(25,30))
+        E:egpBox(I+100,vec2(70+I*30,250),vec2(16,20))
+        if (I<=Strength+5){
+            E:egpColor(I+100,vec(33,255,0))
+        }
+        else{
+            E:egpColor(I+100,vec(255,0,0))
+        }
+    }
+    
+    
+    
+    timer("reload_egp",15000)
+}
+
+if (clk("Get")){
+    findByClass("player")
+    findSortByDistance(entity():pos())
+    U = find()
+    
+    ST = toString(round(ShieldPercent))
+    HistoryTxt = "|"+ST+HistoryTxt
+    E:egpSetText(History,HistoryTxt)
+    E:egpSetText(Title2,"Field force: "+ST+"%")
+    E:egpSetText(Title3,"Strength: "+toString(Strength))
+    
+    E:egpLine(ProgressBar,vec2(82,180),vec2(82+3.50*ShieldPercent,180))
+    
+    for (I=1,10){
+        if (I<=Strength+5){
+            E:egpColor(I+100,vec(33,255,0))
+        }
+        else{
+            E:egpColor(I+100,vec(255,0,0))
+        }
+    }
+    
+    if (round(ShieldPercent)>=100&Strength<5){
+        E:egpSetText(Warning,"Add strength to your shield!")
+    }
+    elseif (round(ShieldPercent)+30<100){
+        E:egpSetText(Warning,"Sub strength to your shield")
+    }
+    elseif (round(ShieldPercent)<10){
+        E:egpSetText(Warning,"Shield critical!")
+        Alert = 1
+    }
+    else{
+        E:egpSetText(Warning,"No warnings")
+        Alert = 0
+    }
+    
+    timer("Get",1000)
+}
+
+
