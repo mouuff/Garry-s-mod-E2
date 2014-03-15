@@ -1,8 +1,8 @@
 @name Target Finder v2
-@inputs E:wirelink ChairMode User:entity
+@inputs E:wirelink ChairMode
 @outputs Target:entity Fire
 @persist Target:entity Fire
-@persist Entities:array ColorBox FireCircle Clicking U:entity
+@persist Entities:array FireCircle Clicking U:entity
 @trigger 
 
 
@@ -10,21 +10,14 @@ interval(10)
 
 if (first()|dupefinished()){
     Fire = 0
-    ColorBox = 0
     Clicking = 0
+    U = owner()
     
     timer("reload_entities",0)
     timer("reset",0)
 }
 
 #print(E:egpCursor(U))
-
-if (User){
-    U = User
-}
-else{
-    U = owner()
-}
 
 if (ChairMode){
     E:egpTriangle(1337,E:egpCursor(U),E:egpCursor(U)+vec2(10,15),E:egpCursor(U)+vec2(0,15))
@@ -41,8 +34,6 @@ if (Click&(E:egpCursor(U):x()!=-1)){
         Xbox = I+20
         Xname = I+50
         if (inrange(E:egpCursor(U),vec2(50,50+50*I),vec2(470,90+50*I))){
-            E:egpColor(ColorBox,vec(255,255,255))
-            ColorBox = Xbox
             E:egpColor(Xbox,vec(255,0,0))
             Target = Entity
         }
@@ -80,11 +71,20 @@ if (clk("reload_entities")){
         if (Entity:isAdmin()|Entity:isSuperAdmin()){
             E:egpColor(Xname,vec(255,255,0))
         }
+        else{
+            E:egpColor(Xname,vec(255,255,255))
+        }
+        if (Entity==Target){
+            E:egpColor(Xbox,vec(255,0,0))
+        }
+        else{
+            E:egpColor(Xbox,vec(255,255,255))
+        }
         E:egpText(Xrange,"range: "+toString(round(Entity:pos():distance(entity():pos()))),vec2(350,I*45+70))
-        E:egpColor(ColorBox,vec(255,0,0))
     }
+    U = Entities[1,entity]
     
-    timer("reload_entities",1000)
+    timer("reload_entities",250)
 }
 if (clk("reset")){
     E:egpClear()
@@ -96,7 +96,7 @@ if (clk("reset")){
     FireCircleCorner = 7
     
     E:egpBox(Background,vec2(256,256),vec2(512,512))
-    E:egpColor(Background,vec(20,20,200))
+    E:egpColor(Background,vec(40,40,40))
     
     E:egpBoxOutline(Corner,vec2(256,290),vec2(470,400))
     
@@ -117,9 +117,8 @@ if (clk("reset")){
     }
 
     
-    timer("reset",10000)
+    timer("reset",15000)
 }
-
 
 
 
