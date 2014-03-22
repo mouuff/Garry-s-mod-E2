@@ -1,0 +1,176 @@
+@name Hatak holo
+@inputs ActivePeltakChair ActiveAncientChair
+@outputs 
+@persist Hatak:entity Chair AncientChair
+@trigger all
+
+function vector localVec(X:number,Y:number,Z:number){
+    return Hatak:toWorld(vec(X,Y,Z))
+}
+function angle localAng(P:number,Y:number,R:number){
+    return Hatak:toWorld(ang(vec(P,Y,R)))
+}
+
+
+if (first()|dupefinished()){
+    Chair = 17
+    AncientChair = 18
+    Hatak = entity():isWeldedTo()
+    holoCreate(1)
+    holoModel(1,"models/SGW/Hatak/sgw_hatak.mdl")
+    holoPos(1,Hatak:pos())
+    holoAng(1,Hatak:angles())
+    
+    holoCreate(2)
+    holoScale(2,vec(100,100,0.01))
+    holoPos(2,localVec(-190,0,-600))
+    holoAng(2,Hatak:angles())
+    holoMaterial(2,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(3)
+    holoScale(3,vec(100,100,0.01))
+    holoPos(3,localVec(410,0,-600))
+    holoAng(3,Hatak:angles())
+    holoMaterial(3,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(4)
+    holoScale(4,vec(100,100,0.01))
+    holoPos(4,localVec(-650,0,-470))
+    holoAng(4,localAng(100,0,0))
+    holoMaterial(4,"models/shadertest/shader4")
+    
+    holoCreate(5)
+    holoScale(5,vec(100,25,0.01))
+    holoPos(5,localVec(400,0,-38))
+    holoAng(5,Hatak:angles())
+    holoMaterial(5,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(6)
+    holoScale(6,vec(100,100,0.01))
+    holoPos(6,localVec(0,0,130))
+    holoAng(6,Hatak:angles())
+    holoMaterial(6,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(7)
+    holoScale(7,vec(100,100,0.01))
+    holoPos(7,localVec(-190,0,130))
+    holoAng(7,Hatak:angles())
+    holoMaterial(7,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(8)
+    holoScale(8,vec(20,20,0.01))
+    holoPos(8,localVec(50,0,-38))
+    holoAng(8,Hatak:angles())
+    holoMaterial(8,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(9)
+    holoScale(9,vec(100,5,0.01))
+    holoPos(9,localVec(-80,300,-580))
+    holoAng(9,localAng(0,0,45))
+    holoMaterial(9,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(10)
+    holoScale(10,vec(100,5,0.01))
+    holoPos(10,localVec(-400,300,-580))
+    holoAng(10,localAng(0,0,45))
+    holoMaterial(10,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(11)
+    holoScale(11,vec(100,5,0.01))
+    holoPos(11,localVec(-80,-300,-580))
+    holoAng(11,localAng(0,0,-45))
+    holoMaterial(11,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(12)
+    holoScale(12,vec(100,5,0.01))
+    holoPos(12,localVec(-400,-300,-580))
+    holoAng(12,localAng(0,0,-45))
+    holoMaterial(12,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(13)
+    holoScale(13,vec(50,100,0.01))
+    holoPos(13,localVec(-370,0,-600))
+    holoAng(13,Hatak:angles())
+    holoMaterial(13,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(14)
+    holoScale(14,vec(45,45,0.01))
+    holoPos(14,localVec(-130,0,385))
+    holoAng(14,Hatak:angles())
+    holoMaterial(14,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(15)
+    holoScale(15,vec(5,5,5))
+    holoPos(15,localVec(210,-30,-400))
+    holoAng(15,localAng(90,0,180))
+    holoModel(15,"models/Iziraider/artifacts/eye_ra.mdl")
+    
+    holoCreate(16)
+    holoScale(16,vec(5,5,2))
+    holoPos(16,localVec(-130,0,380))
+    holoAng(16,Hatak:angles())
+    holoMaterial(16,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(Chair)
+    holoPos(Chair,localVec(-130,0,390))
+    holoAng(Chair,localAng(0,-90,0))
+    holoModel(Chair,"models/MarkJaw/drone_chair/chair.mdl")
+    
+    holoCreate(AncientChair)
+    holoPos(AncientChair,localVec(-290,0,-35))
+    holoAng(AncientChair,localAng(0,90,0))
+    holoModel(AncientChair,"models/MarkJaw/drone_chair/chair.mdl")
+    
+    holoCreate(19)
+    holoPos(19,localVec(-290,0,-45))
+    holoAng(19,Hatak:angles())
+    holoScale(19,vec(5,5,2))
+    holoMaterial(19,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(20)
+    holoScale(20,vec(10,20,0.01))
+    holoPos(20,localVec(0,-150,-38))
+    holoAng(20,localAng(0,17,0))
+    holoMaterial(20,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(21)
+    holoScale(21,vec(10,20,0.01))
+    holoPos(21,localVec(0,150,-38))
+    holoAng(21,localAng(0,-17,0))
+    holoMaterial(21,"Boba_Fett/textures/catwalk_metal")
+    
+    holoCreate(22)
+    holoScale(22,vec(50,50,0.01))
+    holoPos(22,localVec(-200,0,-150))
+    holoAng(22,Hatak:angles())
+    holoMaterial(22,"models/shadertest/shader4")
+    
+    holoCreate(23)
+    holoScale(23,vec(20,1,0.01))
+    holoPos(23,localVec(-180,0,-38))
+    holoAng(23,Hatak:angles())
+    holoMaterial(23,"Boba_Fett/textures/catwalk_metal")
+    
+    
+    for (I=1,25){
+        holoParent(I,Hatak)
+    }
+}
+
+if (ActivePeltakChair){
+    holoAnim(Chair,2)
+}
+else{
+    holoAnim(Chair,0)
+}
+
+if (ActiveAncientChair){
+    holoAnim(AncientChair,2)
+}
+else{
+    holoAnim(AncientChair,0)
+}
+
+
+
+

@@ -1,0 +1,87 @@
+@name Control Panel
+@inputs ButtonPressed
+@outputs Inst1 Inst2 Tog1 Tog2 Code:string RingDial:string RingDialClosest
+@persist Code:string Help:string RingDial:string FailCount RingDialClosest Tog1 Tog2 Inst1 Inst2
+@trigger ButtonPressed
+@model models/Iziraider/disabler/disabler.mdl
+
+
+if (first()|dupefinished()){
+    Help = "
+Inst means an instant button
+Tog means a toggle button
+
+365 = Inst1
+124 = Inst2
+145 = Tog1
+135 = Tog2
+
+246(ring symbols here) = ring dial
+"
+    Code = ""
+    FailCount = 0
+}
+
+if (owner():aimEntity() == entity()&owner():keyUse()){
+    print(Help)
+}
+
+if (ButtonPressed != -1){
+    Code += toString(ButtonPressed)
+    timer("action",4000)
+}
+
+
+if (clk("action")){
+    entity():soundPlay(0,0,"common/warning.wav")
+    if (Code=="365"){
+        Inst1 = 1
+        timer("reset",500)
+    }
+    elseif (Code=="124"){
+        Inst2 = 1
+        timer("reset",500)
+    }
+    elseif (Code == "145"){
+        if (Tog1){
+            Tog1 = 0
+        }
+        else{
+            Tog1 = 1
+        }
+    }
+    elseif (Code == "135"){
+        if (Tog2){
+            Tog2 = 0
+        }
+        else{
+            Tog2 = 1
+        }
+    }
+    elseif (Code:find("246")){
+        if (Code:length()==3){
+            RingDialClosest = 1
+        }
+        else{
+            RingDial = Code:sub(4)
+        }
+        entity():soundPlay(0,0,"tech/ring_transfer.mp3")
+        timer("reset",500)
+    }
+    else{
+        FailCount += 1
+        
+    }
+    if (FailCount>=3){
+        print(Help)
+        FailCount = 0
+    }
+    Code = ""
+}
+
+if (clk("reset")){
+    Inst1 = 0
+    Inst2 = 0
+    RingDialClosest = 0
+    RingDial = ""
+}

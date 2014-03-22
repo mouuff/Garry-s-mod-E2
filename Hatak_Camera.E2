@@ -1,0 +1,26 @@
+@name Hatak Camera
+@inputs ZoomIn ZoomOut Elevation Bearing
+@outputs CamAng:angle CamPos:vector
+@persist Hatak:entity CamAng:angle CamPos:vector Zoom
+@trigger 
+
+interval(10)
+
+if (first()|dupefinished()){
+    Zoom = 1000
+    Hatak = entity():isWeldedTo()
+    holoCreate(1)
+    holoAlpha(1,0)
+}
+
+if (ZoomOut){
+    Zoom += 100
+}
+elseif (ZoomIn){
+    Zoom -= 100
+}
+holoPos(1,Hatak:pos())
+Ang = ang(vec(-Elevation, Bearing, 0))
+holoAng(1,Ang)
+CamAng = Ang
+CamPos = holoEntity(1):toWorld(vec(-Zoom,0,0))

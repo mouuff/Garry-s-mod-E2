@@ -1,0 +1,10 @@
+@name Weight
+
+
+if (first()|dupefinished()){
+    Stuff = entity():isWeldedTo():getConstraints()
+    for (E=1,Stuff:count()){
+        Ent = Stuff[E,entity]
+        Ent:setMass(Ent:mass()/10)
+    }
+}

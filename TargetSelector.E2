@@ -1,0 +1,12 @@
+@name TargetSelector
+@inputs Select TargetDefault:entity TargetSecondary:entity
+@outputs Target:entity
+@persist Target:entity
+@trigger all
+
+if (Select){
+    Target = TargetSecondary
+}
+else{
+    Target = TargetDefault
+}
