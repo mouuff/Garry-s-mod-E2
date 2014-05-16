@@ -2,8 +2,8 @@
 @inputs Active Forward Backward Right Left Speed Bearing Elevation ChangePlayer TargetClosestPlayer LockCamOnTarget
 @inputs S:wirelink Shield ShieldOn Power
 @outputs CamPos:vector AimPos:vector CamAng:angle Target:entity
-@persist CamPos:vector CamAng:angle N Failed Target:entity AncientChair:entity AncientChairBase:entity Spying
-@persist EShield ETarget EBox EWatch EPower EAtlantis
+@persist CamPos:vector CamAng:angle N Failed Spying Obs:table
+@persist AncientChair:entity AncientChairBase:entity Target:entity
 
 
 function void setPos(V:vector){
@@ -14,21 +14,22 @@ function void setPos(V:vector){
 if (first()|dupefinished()){
     S:egpClear()
     
-    EBox = 1
-    EShield = 3
-    ETarget = 4
-    EWatch = 5
-    EPower = 6
-    EAtlantis = 7
+    Obs = table()
+    Obs["EBox",number] = 1
+    Obs["EShield",number] = 3
+    Obs["ETarget",number] = 4
+    Obs["EWatch",number] = 5
+    Obs["EPower",number] = 6
+    Obs["EAtlantis",number] = 7
     
-    S:egpRoundedBox(EBox,vec2(350,190),vec2(200,200))
-    S:egpColor(EBox,vec4(0,0,0,150))
+    S:egpRoundedBox(Obs["EBox",number],vec2(350,190),vec2(200,200))
+    S:egpColor(Obs["EBox",number],vec4(0,0,0,150))
     
-    S:egpText(ETarget, "", vec2(256,256))
-    S:egpText(EWatch, "", vec2(256,220))
-    S:egpText(EPower, "", vec2(256,180))
-    S:egpText(EShield, "", vec2(256,140))
-    S:egpText(EAtlantis, "", vec2(256,120))
+    S:egpText(Obs["ETarget",number], "", vec2(256,256))
+    S:egpText(Obs["EWatch",number], "", vec2(256,220))
+    S:egpText(Obs["EPower",number], "", vec2(256,180))
+    S:egpText(Obs["EShield",number], "", vec2(256,140))
+    S:egpText(Obs["EAtlantis",number], "", vec2(256,120))
     
     Spying = 0
     Failed = 0
@@ -48,6 +49,18 @@ if (first()|dupefinished()){
     findSortByDistance(entity():pos())
     AncientChairBase = find()
 }
+if (Active&~Active&AncientChair){
+    interval(50)
+    AncientChair:setSkin(1)
+    AncientChairBase:setSkin(1)
+    AncientChair:soundPlay(0,0,"tech/chair2.wav")
+}
+elseif (~Active&AncientChair){
+    interval(700)
+    AncientChair:setSkin(0)
+    AncientChairBase:setSkin(0)
+}
+
 
 holoAng(1,ang(vec(-Elevation, Bearing, 0)))
 
@@ -85,14 +98,14 @@ else{
         findByClass("player")
         findSortByDistance(holoEntity(1):pos())
         Target = find()
-        S:egpSetText(ETarget, "Target: "+Target:name())
+        S:egpSetText(Obs["ETarget",number], "Target: "+Target:name())
     }
     if ((~ChangePlayer&ChangePlayer)|Failed){
         findByClass("player")
         findSortByDistance(entity():pos())
         P = findResult((N%findCount())+1)
         if (P:name() != ""){
-            S:egpText(EWatch, "Watching: "+P:name(), vec2(256,220))
+            S:egpText(Obs["EWatch",number], "Watching: "+P:name(), vec2(256,220))
             holoPos(1,P:pos()+vec(0,0,100))
             Failed = 0
         }
@@ -103,19 +116,6 @@ else{
     }
 }
 
-if (Active&~Active&AncientChair){
-    interval(50)
-    AncientChair:setSkin(1)
-    AncientChairBase:setSkin(1)
-    AncientChair:soundPlay(0,0,"tech/chair2.wav")
-}
-elseif (~Active&AncientChair){
-    interval(500)
-    AncientChair:setSkin(0)
-    AncientChairBase:setSkin(0)
-}
-
-
     
 CamAng = holoEntity(1):angles()
 CamPos = holoEntity(1):pos()
@@ -123,11 +123,10 @@ CamPos = holoEntity(1):pos()
 AimPos = rangerOffset(10000,CamPos,holoEntity(1):forward()):pos()
 
 
-S:egpText(EShield, "Shields: "+toString(round(Shield))+"%", vec2(256,180))
-S:egpText(EPower, "Power: "+toString(round(Power))+"%", vec2(256,140))
-S:egpText(EAtlantis, "Shield online: "+toString(ShieldOn), vec2(256,100))
+S:egpText(Obs["EShield",number], "Shields: "+toString(round(Shield))+"%", vec2(256,180))
+S:egpText(Obs["EPower",number], "Power: "+toString(round(Power))+"%", vec2(256,140))
+S:egpText(Obs["EAtlantis",number], "Shield online: "+toString(ShieldOn), vec2(256,100))
 
 #S:egpBox(10,vec2(600,500),vec2(100,100))
 #S:egpMaterial(10,"models/props_combine/tprings_globe")
-
 
