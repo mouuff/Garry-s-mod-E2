@@ -1,0 +1,97 @@
+@name Teltak hyperspace
+@inputs SmallJump OpenHyperspace Goto:vector Angle:angle
+@outputs Jump Vec:vector Ang:angle
+@persist WindowPos:vector Vec:vector Ang:angle Jumper:entity Jump
+@trigger 
+
+interval(50)
+
+function hyperJump(Ent:entity,DestPos:vector,DestAng:angle){
+    timer("OpenHyperspace",0)
+    
+    Vec = DestPos
+    Ang = DestAng
+    
+    Dome = 300
+    Blackhole = 301
+    Cone = 302
+    DestWindow = 303
+    
+    holoCreate(Dome)
+    holoCreate(Cone)
+    holoCreate(Blackhole)
+    holoCreate(DestWindow)
+    
+    holoAng(DestWindow,DestAng+ang(vec(90,0,0)))
+    holoPos(DestWindow,DestPos)
+    
+    EntAng = Ent:angles()
+    H = holoEntity(Dome)
+    
+    holoAng(Dome,EntAng+ang(vec(90,0,0)))
+    holoPos(Dome,Ent:toWorld(vec(1000,0,0)))
+    
+    holoAng(Cone,EntAng+ang(vec(90,0,0)))
+    holoPos(Cone,H:toWorld(vec(0,0,200)))
+    
+    holoAng(Blackhole,EntAng+ang(vec(90,0,0)))
+    holoPos(Blackhole,H:toWorld(vec(0,0,50)))
+    
+    holoModel(Dome,"hq_hdome_thin")
+    holoMaterial(Dome,"models/props_lab/warp_sheet")
+    holoScale(Dome,vec(50,50,20))
+    
+    
+    holoMaterial(DestWindow,"models/effects/portalrift_sheet")
+    holoScale(DestWindow,vec(50,50,0))
+    
+    
+    holoModel(Cone,"hq_cone")
+    holoMaterial(Cone,"models/props_combine/tprings_globe")
+    holoScale(Cone,vec(30,30,100))
+    
+
+    holoMaterial(Blackhole,"models/effects/portalrift_sheet")
+    holoScale(Blackhole,vec(50,50,0.01))
+    
+    
+    holoEntity(Dome):soundPlay(99,0,"tech/hyperwindow.wav")
+    holoEntity(DestWindow):soundPlay(98,0,"tech/hyperwindow.wav")
+    WindowPos = holoEntity(Cone):pos()
+}
+
+if(clk("OpenHyperspace")){
+    Distance = Jumper:pos():distance(WindowPos)
+    if (Distance<200){
+        Jump = 1
+        holoEntity(300):soundPlay(100,0,"tech/sodan_oblisk.wav")
+        timer("RemoveInWindow",1000)
+        
+    }
+    elseif (Distance>1500){
+        timer("RemoveInWindow",1000)
+    }
+    else{
+        timer("OpenHyperspace",100)
+    }
+}
+
+if (clk("RemoveInWindow")){
+    for (H=300, 303){
+        holoDelete(H)
+    }
+    Jump = 0
+}
+
+if (first()|dupefinished()){
+    Jumper = entity():isWeldedTo()
+}
+
+if (SmallJump&~SmallJump){
+    hyperJump(Jumper,Jumper:toWorld(vec(10000,0,0)),Jumper:angles())
+}
+if (OpenHyperspace&~OpenHyperspace){
+    hyperJump(Jumper,Goto,Angle)
+}
+
+
