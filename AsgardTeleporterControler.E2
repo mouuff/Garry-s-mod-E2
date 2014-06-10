@@ -1,8 +1,10 @@
 @name Teleporter Control E2
 @outputs Origin:vector Dest:vector TeleportEverything Send
 @persist SavedPos:table WhiteList:array SafeZoneRange SafeZonePos:vector SafeActive TeleportEverything
+@model models/Iziraider/artifacts/asgard_stone.mdl
 
-interval(250)
+interval(500)
+
 runOnChat(1)
 
 function entity findStargateByAddress(Address:string){
@@ -97,9 +99,12 @@ function vector getSafePos(Pos:vector){
 #main script
 
 
-if (first()|duped()) {
-    print("This E2 is for Asgard Teleporter")
-    hint("Don't forget to link to Teleporter\nYou need CAP",15)
+if (first()|dupefinished()) {
+    #ifdef stargateSystemType()
+    hint("This E2 is for Asgard Teleporter",10)
+    #else
+    hint("You need CAP",10)
+    #endif
     resetPos()
     resetSafe()
 }
@@ -116,19 +121,21 @@ if (chatClk(owner())){
     Command = LastSaid[1,string]
     Arg1 = LastSaid[2,string]
     Arg2 = LastSaid[3,string]
-    if (Command[1] == "!"){
-        hideChat(1)
-    }
+    
+    #get to a gate by its address
     if (Command=="!gate"&Arg1){
         asgardTeleport(owner():pos(),findStargateByAddress(Arg1):toWorld(vec(100,0,0)),0)
     }
+    #get to a gate number
     if (Command=="!gaten"&Arg1){
         asgardTeleport(owner():pos(),getGate(Arg1:toNumber()):toWorld(vec(100,0,0)),0)
     }
+    #save a position
     if (Command=="!save"&Arg1){
         savePos(Arg1:lower(), owner():pos())
         print("Position Saved as "+Arg1)
     }
+    #get to the teleporter
     elseif (Command=="!base"){
         if (Arg1){
             asgardTeleport(findPlayerByName(Arg1):pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
@@ -137,13 +144,16 @@ if (chatClk(owner())){
             asgardTeleport(owner():pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
         }
     }
+    #Pass a wall
     elseif (Command=="!wall"){
         asgardTeleport(owner():pos(), owner():toWorld(vec(90, 0, 0)), 0)
     }
+    #send what you aim to a position you saved
     elseif (Command=="!cargo"&Arg1){
         TeleportEverything = 1
         asgardTeleport(owner():aimPos(), getPos(Arg1:lower())+vec(0,0,50), 1)
     }
+    #get to a saved position
     elseif (Command=="!to"){
         Pos = getPos(Arg1:lower())
         if (Pos){
@@ -156,21 +166,26 @@ if (chatClk(owner())){
         }
         else{print(Arg1+" not found")}
     }
+    #go to a player
     elseif (Command=="!tohim"){
         asgardTeleport(owner():pos(), getSafePos(findPlayerByName(Arg1):pos()),0)
     }
+    #teleport a player to you
     elseif (Command == "!tome"){
         asgardTeleport(findPlayerByName(Arg1):pos(), getSafePos(owner():pos()+vec(0,50,0)),0)
     }
+    #reset the E2
     elseif (Command == "!reset"){
         reset()
     }
+    #list of saved positions
     elseif (Command == "!list"){
         print("Saved Positions:")
         for (X=1, SavedPos:count()){
             print(SavedPos:keys()[X, string])
         }
     }
+    #toggle safe zone
     elseif (Command == "!safe"){
         if (Arg1){
             setSafeZone(owner():pos(),Arg1:toNumber())
@@ -180,8 +195,11 @@ if (chatClk(owner())){
             print("SafeZone: " + toggleSafeZone())
         }
     }
+    #Add to white list
     elseif (Command == "!white" & Arg1){
-        addToWhiteList(findPlayerByName(Arg1))
+        Player = findPlayerByName(Arg1)
+        addToWhiteList(Player)
+        hint("Added to white list: "+Player:name(),5)
     }
 }
 
