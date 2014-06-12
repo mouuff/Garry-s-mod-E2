@@ -1,49 +1,26 @@
-@name Teleporter Control E2
-@outputs Origin:vector Dest:vector TeleportEverything Send
-@persist SavedPos:table WhiteList:array SafeZoneRange SafeZonePos:vector SafeActive TeleportEverything
+@name Transporter Control E2
+@inputs Transporter:wirelink
+@persist SavedPos:table WhiteList:array File:string SafeZoneRange SafeZonePos:vector SafeActive
 @model models/Iziraider/artifacts/asgard_stone.mdl
 
-interval(500)
-
-runOnChat(1)
-
-function entity findStargateByAddress(Address:string){
-    findByClass("stargate_*")
-    Stargates = findToArray()
-    for (I=1, Stargates:count()){
-        Stargate = Stargates[I, entity]
-        if (Stargate:stargateAddress() == Address:explode("#")[1, string]){
-            break
-        }
-    }
-    return Stargate
-}
-function entity getGate(N){
-    findByClass("stargate_*")
-    return findResult(N)
-}
-
-function void asgardTeleport(From:vector, To:vector, TeleportEverything){
-    Origin = From
-    Dest = To
-    if (TeleportEverything){
-        TeleportEverything = 1
-        timer("DisableTeleportEverything",1000)
-    }
-    else{
-        TeleportEverything = 0
-    }
-    timer("Send", 50)
-}
 
 #position saver functions
 function void savePos(Name:string, Pos:vector){
+    #store a new position
     SavedPos[Name, vector] = Pos
+    if (fileCanWrite()){
+        fileWrite(File,vonEncode(SavedPos))
+        hint("Saved to file",5)
+    }
+    else{
+        hint("Couldn't write file",5)
+    }
 }
 function void resetPos(){
     SavedPos = table()
 }
 function vector getPos(Name:string){
+    #get a saved position
     Keys = SavedPos:keys()
     for (Key=1, Keys:count()){
         if (Keys[Key,string]:find(Name)){
@@ -82,7 +59,9 @@ function entity getIntruderInSafeZone(){
 function void addToWhiteList(Player:entity){
     WhiteList[WhiteList:count()+1, entity] = Player
 }
+
 function vector getSafePos(Pos:vector){
+    #finding free space around the vector (to not get teleported in walls)
     holoCreate(1,Pos)
     holoColor(1,vec(0,0,0),0)
     for (X=0,8){
@@ -100,20 +79,32 @@ function vector getSafePos(Pos:vector){
 
 
 if (first()|dupefinished()) {
+    runOnChat(1)
+    runOnFile(1)
+    
     #ifdef stargateSystemType()
-    hint("This E2 is for Asgard Teleporter",10)
+    hint("This E2 is for Asgard Transporter",10)
     #else
     hint("You need CAP",10)
     #endif
+    
+    File = ">e2shared/Asgard_"+map()+".txt"
+    
+    fileLoad(File)
+    
     resetPos()
     resetSafe()
 }
 
 if (SafeActive){
+    interval(500)
     Intruder = getIntruderInSafeZone()
     if (Intruder){
-        asgardTeleport(Intruder:pos(), vec(0,0,0), 0)
+        Transporter:stargateAsgardTeleport(Intruder:pos(), vec(0,0,0), 0)
     }
+}
+else{
+    interval(5000)
 }
 
 if (chatClk(owner())){
@@ -122,14 +113,7 @@ if (chatClk(owner())){
     Arg1 = LastSaid[2,string]
     Arg2 = LastSaid[3,string]
     
-    #get to a gate by its address
-    if (Command=="!gate"&Arg1){
-        asgardTeleport(owner():pos(),findStargateByAddress(Arg1):toWorld(vec(100,0,0)),0)
-    }
-    #get to a gate number
-    if (Command=="!gaten"&Arg1){
-        asgardTeleport(owner():pos(),getGate(Arg1:toNumber()):toWorld(vec(100,0,0)),0)
-    }
+    
     #save a position
     if (Command=="!save"&Arg1){
         savePos(Arg1:lower(), owner():pos())
@@ -138,41 +122,45 @@ if (chatClk(owner())){
     #get to the teleporter
     elseif (Command=="!base"){
         if (Arg1){
-            asgardTeleport(findPlayerByName(Arg1):pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
+            Transporter:stargateAsgardTeleport(findPlayerByName(Arg1):pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
         }
         else{
-            asgardTeleport(owner():pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
+            Transporter:stargateAsgardTeleport(owner():pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
         }
     }
     #Pass a wall
     elseif (Command=="!wall"){
-        asgardTeleport(owner():pos(), owner():toWorld(vec(90, 0, 0)), 0)
+        Transporter:stargateAsgardTeleport(owner():pos(), owner():toWorld(vec(90, 0, 0)), 0)
     }
     #send what you aim to a position you saved
     elseif (Command=="!cargo"&Arg1){
-        TeleportEverything = 1
-        asgardTeleport(owner():aimPos(), getPos(Arg1:lower())+vec(0,0,50), 1)
+        if (Arg1=="base"){
+            Transporter:stargateAsgardTeleport(owner():aimPos(),entity():isWeldedTo():toWorld(vec(70,0,0)), 1)
+        }
+        else{
+            Transporter:stargateAsgardTeleport(owner():aimPos(), getPos(Arg1:lower())+vec(0,0,50), 1)
+        }
     }
     #get to a saved position
     elseif (Command=="!to"){
         Pos = getPos(Arg1:lower())
         if (Pos){
             if (Arg2){
-                asgardTeleport(findPlayerByName(Arg2):pos(),Pos, 0)
+                Transporter:stargateAsgardTeleport(findPlayerByName(Arg2):pos(),Pos, 0)
             }
             else{
-                asgardTeleport(owner():pos(), Pos, 0)
+                Transporter:stargateAsgardTeleport(owner():pos(), Pos, 0)
             }
         }
         else{print(Arg1+" not found")}
     }
     #go to a player
     elseif (Command=="!tohim"){
-        asgardTeleport(owner():pos(), getSafePos(findPlayerByName(Arg1):pos()),0)
+        Transporter:stargateAsgardTeleport(owner():pos(), getSafePos(findPlayerByName(Arg1):pos()),0)
     }
     #teleport a player to you
     elseif (Command == "!tome"){
-        asgardTeleport(findPlayerByName(Arg1):pos(), getSafePos(owner():pos()+vec(0,50,0)),0)
+        Transporter:stargateAsgardTeleport(findPlayerByName(Arg1):pos(), getSafePos(owner():pos()+vec(0,50,0)),0)
     }
     #reset the E2
     elseif (Command == "!reset"){
@@ -203,13 +191,8 @@ if (chatClk(owner())){
     }
 }
 
-if (clk("Send")) {
-    Send = 1
-}
-else {
-    Send = 0
+if (fileClk()&fileLoaded()){
+    SavedPos = vonDecodeTable(fileRead())
+    hint("File loaded",5)
 }
 
-if (clk("DisableTeleportEverything")){
-    TeleportEverything = 0
-}
