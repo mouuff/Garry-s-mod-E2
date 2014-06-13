@@ -1,0 +1,47 @@
+@name Minge blind
+@persist Player:entity Sounds:array
+
+if (first()|dupefinished()){
+    #Some guys ever did it to me, so I really wanted to respond well with this E2
+    
+    Target = "anu"
+    
+    Sounds = array("npc/zombie/zombie_die1.wav","npc/zombie_poison/pz_pain2.wav",
+    "npc/zombie_poison/pz_pain1.wav","npc/zombie_poison/pz_die1.wav","npc/zombie/zombie_voice_idle5.wav",
+    "npc/zombie/zombie_voice_idle6.wav","npc/zombie/zombie_voice_idle5.wav","npc/zombie/zombie_voice_idle8.wav")
+    
+    Player = findPlayerByName(Target)
+    
+    for (X=1,4){
+        holoCreate(X)
+        holoModel(X,"hq_hdome_thin")
+        holoPos(X,entity():pos())
+        holoMaterial(X,"debug/env_cubemap_model")
+        holoPos(X,Player:pos()+vec(0,0,40))
+        holoParent(X,Player)
+    }
+    holoScale(1,vec(8,8,8))
+    holoScale(2,vec(8,8,8))
+    holoAng(2,ang(vec(180,0,0)))
+    
+    holoScale(3,vec(15,15,15))
+    holoScale(4,vec(15,15,15))
+    holoAng(4,ang(vec(180,0,0)))
+    
+    holoEntity(1):soundPlay(0,0,"hahayoufool.wav")
+    
+    timer("MingeSound",2000)
+}
+
+if (clk("MingeSound")){
+    soundPurge()
+    Sound = Sounds[randint(1,Sounds:count()),string]
+    Duration = soundDuration(Sound)
+    holoEntity(1):soundPlay(0,0,Sound)
+    if (Duration!=60){
+        timer("MingeSound",Duration*1000)
+    }
+    else{
+        timer("MingeSound",3000)
+    }
+}
