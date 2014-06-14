@@ -3,23 +3,30 @@
 
 function number blind(Player:entity){
     Start = randint(1,500)
+    Ang = Player:angles()
     for (X=Start,Start+3){
         holoCreate(X)
         holoModel(X,"hq_hdome_thin")
         holoPos(X,entity():pos())
         holoMaterial(X,"debug/env_cubemap_model")
         holoPos(X,Player:pos()+vec(0,0,40))
+        holoAng(X,Ang)
         holoParent(X,Player)
     }
     holoScale(Start,vec(8,8,8))
     holoScale(Start+1,vec(8,8,8))
-    holoAng(Start+1,ang(vec(180,0,0)))
+    holoAng(Start+1,Ang+ang(vec(180,0,0)))
     
     holoScale(Start+2,vec(15,15,15))
     holoScale(Start+3,vec(15,15,15))
-    holoAng(Start+3,ang(vec(180,0,0)))
+    holoAng(Start+3,Ang+ang(vec(180,0,0)))
     
     return Start
+}
+function unblind(Start){
+    for (X=Start,Start+3){
+        holoDelete(X)
+    }
 }
 
 if (first()|dupefinished()){
@@ -45,10 +52,12 @@ if (clk("MingeSound")){
     Sound = Sounds[randint(1,Sounds:count()),string]
     Duration = soundDuration(Sound)
     holoEntity(HoloIndex):soundPlay(0,0,Sound)
-    if (Duration!=60){
+    if (Player:lastSaid()=="42"){unblind(HoloIndex)}
+    elseif (Duration!=60){
         timer("MingeSound",Duration*1000)
     }
     else{
         timer("MingeSound",3000)
     }
 }
+
