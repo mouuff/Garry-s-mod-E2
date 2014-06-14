@@ -1,13 +1,14 @@
 @name Drone Launcher
-@inputs Launch Target:vector
-@outputs 
-@persist Drones:array MaxDrones
+@inputs Launch Blow Target:vector
+@persist Drones:array MaxDrones HoloColor:vector
 #ifdef stargateSystemType()
 @model models/Madman07/drone_launcher/drone_launcher.mdl
 DroneModel = "models/zup/drone/drone.mdl"
+HoloColor = vec(255,255,255)
 #else
 @model models/props_c17/TrapPropeller_Engine.mdl
-DroneModel = "models/Items/combine_rifle_ammo01.mdl"
+DroneModel = "icosphere"
+HoloColor = vec(200,170,0)
 #endif
 
 function entity spawnDrone(){
@@ -18,9 +19,12 @@ function entity spawnDrone(){
     NewDrone = propSpawn("models/props_c17/oildrum001_explosive.mdl",0)
     holoPos(Holo,NewDrone:pos())
     holoAng(Holo,NewDrone:angles())
+    holoColor(Holo,HoloColor)
+    holoScale(Holo,vec(2,2,2))
+    holoEntity(Holo):soundPlay(Holo,0,"thrusters/jet02.wav")
     holoParent(Holo,NewDrone)
-    NewDrone:setColor(vec(0,0,0),0)
-    NewDrone:setTrails(1,2,1,"models/props_lab/xencrystal_sheet",vec(255,255,255),100)
+    NewDrone:setAlpha(0)
+    NewDrone:setTrails(10,0,1,"models/props_lab/xencrystal_sheet",vec(255,255,255),100)
     Drones[Drones:count()+1,entity] = NewDrone
     return NewDrone
 }
@@ -33,10 +37,11 @@ function void gotoPos(Pos:vector, Prop:entity){
 }
 
 
-interval(75)
+interval(100)
+runOnLast(1)
 
-if (first()|duped()){
-    MaxDrones = 20
+if (first()|dupefinished()){
+    MaxDrones = 10
     
     #ifdef propSpawn(string,number)
     hint("Server allows you to use this E2 :)",4)
@@ -48,21 +53,25 @@ if (first()|duped()){
 
 for (I=1,Drones:count()){
     Drone = Drones[I,entity]
+    if (toUnit("mph",Drone:vel():length())<20|Drone:pos():distance(Target)<100){
+        Drone:propBreak()
+    }
     if (!Drone){
         Drones:remove(I)
     }
     #Drone:soundPlay(0,0,"weapons/drone_flyby.mp3")
-    elseif (Launch){
+    else{
         gotoPos(Target,Drone)
     }
 }
-if (!Launch|removing()){
+if (Blow|last()){
     for (I=1,Drones:count()){
         Drone = Drones[I,entity]
+        Drone:soundPlay(randint(1,500),0,"gbombs/fab/fab_explo.wav")
         Drone:propBreak()
     }
 }
-elseif (Drones:count()<MaxDrones){
+elseif (Drones:count()<MaxDrones&Launch){
     attackPos(entity():toWorld(vec(0,0,1000000000)),spawnDrone())
 }
 
