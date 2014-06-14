@@ -10,6 +10,7 @@ Model = "models/Roller.mdl"
 #endif
 
 interval(25)
+runOnLast(1)
 
 
 function void attackPos(Pos:vector, Prop:entity){
@@ -25,14 +26,15 @@ if (first()|dupefinished()){
     Target = noentity()
     
     #ifdef propSpawn(string, number)
-    propSpawn(Model, 0)
+    Drone = propSpawn(Model, 0)
+    
     hint("Spawned "+Model,5)
     #else
     hint("you have to spawn "+Model, 15)
-    #endif
     findByModel(Model)
     findSortByDistance(entity():pos())
     Drone = find()
+    #endif
     entity():soundPlay(0,0,"ambient/energy/spark6.wav")
 }
 if (!Drone:id()&!Reseting){
@@ -70,3 +72,7 @@ if (!Disable){
 if (clk("Reset")){
     reset()
 }
+if (last()){
+    Drone:propBreak()
+}
+
