@@ -54,8 +54,11 @@ if (first()|dupefinished()){
 findByClass("player")
 findSortByDistance(entity():pos())
 Target = find()
+Speed = toUnit("mph",entity():vel():length())
+
 
 Hud:egpSetText(2,"Target: "+Target:name())
+Hud:egpSetText(4,"Speed: "+toString(round(Speed))+"Km/H")
 
 holoPos(1, entity():pos())
 holoAng(1,ang(vec(-Elevation, Bearing, 0)))
@@ -81,7 +84,7 @@ else{
 }
 
 if (Following){
-    forcePos(Target:pos()+vec(0,50,100),entity())
+    forcePos(Target:pos()+vec(0,0,100),entity())
 }
 else{
     if (ChairActive){
@@ -107,14 +110,13 @@ else{
 }
 
 if (Attack|((Target:keyAttack1()&Target:aimEntity()==entity()&Target:weapon():model()!="models/weapons/w_toolgun.mdl"))){
-    attackPos(Target:pos()+vec(0,0,50),entity())
+    attackPos(Target:pos()+vec(0,0,30),entity())
 }
 
-
-if (toUnit("mph",entity():vel():length())>50){
+if (Speed>50){
     entity():soundPlay(0,0,"npc/roller/mine/rmine_moveslow_loop1.wav")
 }
-elseif (toUnit("mph",entity():vel():length())>20){
+elseif (Speed>20){
     entity():soundPlay(0,0,"npc/scanner/combat_scan_loop1.wav")
 }
 else{
@@ -140,5 +142,7 @@ if (clk("reload")){
     Hud:egpText(2,"Target:",vec2(30,40))
     
     Hud:egpText(3,"Stat: "+Stat,vec2(30,70))
+    
+    Hud:egpText(4,"Speed: "+toString(round(Speed))+"Km/H",vec2(30,100))
     timer("reload",10000)
 }
