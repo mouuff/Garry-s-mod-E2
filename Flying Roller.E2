@@ -1,0 +1,144 @@
+@name Roller Mine
+@inputs Hud:wirelink PodControler:wirelink Camera:wirelink
+@outputs 
+@persist Target:entity Stat:string X Following
+@model models/Roller.mdl
+
+interval(50)
+
+function void gotoPos(Pos:vector, Prop:entity){
+    Prop:applyForce((((Pos-Prop:pos())*0.3))*Prop:mass())
+}
+function void attackPos(Pos:vector, Prop:entity){
+    Prop:applyForce(((Pos-Prop:pos())*5)*Prop:mass())
+}
+function void forcePos(Pos:vector, Prop:entity){
+    Prop:applyForce((((Pos-Prop:pos())*10) - Prop:vel())*Prop:mass())
+}
+
+W = PodControler:number("W")
+S = PodControler:number("S")
+A = PodControler:number("A")
+D = PodControler:number("D")
+#R = PodControler:number("R")
+#Shift = PodControler:number("Shift")
+
+Space = PodControler:number("Space")
+ChairActive = PodControler:number("Active")
+Bearing = PodControler:number("Bearing")
+Elevation = PodControler:number("Elevation")
+Attack = PodControler:number("Mouse1")
+Follow = PodControler:number("Mouse2")
+
+
+
+if (first()|dupefinished()){
+
+    entity():soundPlay(1,0,"npc/roller/mine/rmine_predetonate.wav")
+    entity():setColor(vec(0,0,0))
+    
+    Stat = "Free"
+    
+    Following = 0
+    X = 1
+    
+    holoCreate(1)
+    holoShadow(1,0)
+    holoColor(1,vec(0,0,0),0)
+    
+    entity():setTrails(0,30,1,"trails/electric",vec(0,0,255),255)
+    
+    timer("reload",0)
+}
+
+findByClass("player")
+findSortByDistance(entity():pos())
+Target = find()
+
+Hud:egpSetText(2,"Target: "+Target:name())
+
+holoPos(1, entity():pos())
+holoAng(1,ang(vec(-Elevation, Bearing, 0)))
+
+
+if (Follow|(Target:keyUse()&Target:aimEntity()==entity())){
+    if (X){
+        entity():soundPlay(1,0,"npc/roller/mine/rmine_blades_out3.wav")
+        if (Following){
+            Stat = "Free"
+            Following = 0
+        }
+        else{
+            Stat = "Following"
+            Following = 1
+        }
+        Hud:egpSetText(3,"Stat: "+Stat)
+    }
+    X = 0
+}
+else{
+    X = 1
+}
+
+if (Following){
+    forcePos(Target:pos()+vec(0,50,100),entity())
+}
+else{
+    if (ChairActive){
+        Camera:setNumber("Activated",1)
+    }
+    
+    if (W){
+        gotoPos(holoEntity(1):toWorld(vec(500,0,0)),entity())
+    }
+    elseif (S){
+        gotoPos(holoEntity(1):toWorld(vec(-250,0,0)),entity())
+    }
+    if (D){
+        gotoPos(holoEntity(1):toWorld(vec(0,-100,0)),entity())
+    }
+    elseif (A){
+        gotoPos(holoEntity(1):toWorld(vec(0,100,0)),entity())
+    }
+    
+    if (Space){
+        gotoPos(holoEntity(1):toWorld(vec(0,0,500)),entity())
+    }
+}
+
+if (Attack|((Target:keyAttack1()&Target:aimEntity()==entity()&Target:weapon():model()!="models/weapons/w_toolgun.mdl"))){
+    attackPos(Target:pos()+vec(0,0,50),entity())
+}
+
+
+if (toUnit("mph",entity():vel():length())>50){
+    entity():soundPlay(0,0,"npc/roller/mine/rmine_moveslow_loop1.wav")
+}
+elseif (toUnit("mph",entity():vel():length())>20){
+    entity():soundPlay(0,0,"npc/scanner/combat_scan_loop1.wav")
+}
+else{
+    entity():soundPlay(0,0,"npc/scanner/cbot_fly_loop.wav")
+}
+
+
+Camera:setVector("Position",entity():pos())
+Camera:setAngle("Angle",ang(vec(-Elevation, Bearing, 0)))
+
+if (clk("reload")){
+    if (entity():isFrozen()){
+        #ifdef entity:propFreeze(number)
+        entity():propFreeze(0)
+        #else
+        hint("Unfreeze the prop",10)
+        #endif
+    }
+    
+    Hud:egpRoundedBox(1,vec2(130,70),vec2(230,100))
+    Hud:egpColor(1,vec4(0,0,0,150))
+    
+    Hud:egpText(2,"Target:",vec2(30,40))
+    
+    Hud:egpText(3,"Stat: "+Stat,vec2(30,70))
+    timer("reload",10000)
+}
