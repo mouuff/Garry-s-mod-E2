@@ -1,0 +1,118 @@
+@name Base creator
+@persist Props:array X
+@model models/props_combine/CombineThumper001a.mdl
+
+function angle aAng(A, B, C){
+    return ang(vec(A, B, C))
+}
+
+runOnTick(1)
+
+PropsStr = array(
+    "models/props_combine/CombineThumper001a.mdl",
+    "models/props_wasteland/cargo_container01.mdl",
+    "models/props_wasteland/cargo_container01.mdl",
+    "models/props_c17/fence03a.mdl",
+    "models/props_wasteland/cargo_container01.mdl",
+    "models/props_wasteland/cargo_container01b.mdl",
+    "models/props_wasteland/cargo_container01b.mdl",
+    "models/props_combine/combine_train02a.mdl",
+    "models/props_combine/combine_train02a.mdl",
+    "models/props_combine/combine_train02a.mdl",
+    "models/props_combine/combine_train02a.mdl",
+    "models/props_combine/combine_train02a.mdl",
+    "models/props_combine/combine_train02a.mdl",
+    "models/mechanics/solid_steel/i_beam2_96.mdl",
+    "models/mechanics/solid_steel/i_beam2_96.mdl",
+    "models/mechanics/solid_steel/i_beam2_96.mdl",
+    "models/mechanics/solid_steel/i_beam2_96.mdl"
+)
+
+PropsAng = array(
+    aAng(0,0,0),
+    aAng(0,0,0),
+    aAng(0,0,0),
+    aAng(-60,90,90),
+    
+    aAng(0,90,0),
+    
+    aAng(0,-90,0),
+    aAng(0,180,0),
+    aAng(0,0,0),
+    aAng(0,0,0),
+    aAng(0,90,0),
+    aAng(0,90,0),
+    aAng(0,0,0),
+    aAng(0,0,0),
+    aAng(0,90,0),
+    aAng(0,90,0),
+    aAng(0,0,0),
+    aAng(0,0,0)
+    
+)
+
+PropsVec = array(
+    vec(0,0,0),
+    vec(200,0,65),
+    vec(200,380,65),
+    vec(90,50,70),
+    vec(-50,-130,65),
+    vec(-50,500,65),
+    vec(-300,0,65),
+    vec(300,-50,70),
+    vec(300,380,70),
+    vec(-50,-230,70),
+    vec(-50,600,70),
+    vec(-400,300,70),
+    vec(-400,0,70),
+    vec(-450,200,160),
+    vec(350,200,160),
+    vec(0,670,160),
+    vec(0,-300,160)
+)
+
+PropsHide = array(
+14,
+15,
+16,
+17
+)
+
+
+if (first()|dupefinished()){
+    #ifdef propSpawn(string, number)
+    print("Spawning...")
+    X = 1
+    
+    timer("Spawn",0)
+    
+    #else
+    print("This E2 can't run on this server")
+    #endif
+}
+
+
+if (clk("Spawn")){
+    Prop = propSpawn(PropsStr[X,string],entity():toWorld(PropsVec[X,vector]),entity():toWorld(PropsAng[X,angle]),1)
+    
+    
+    for (I = 1, PropsHide:count()){
+        if (PropsHide[I,number] == X){
+            Prop:setAlpha(0)
+        }
+    }
+    
+    X += 1
+    
+    if (X<=PropsStr:count()){
+        timer("Spawn",250)
+    }
+    else{
+        selfDestruct()
+    }
+}
+
+
+
+
+
