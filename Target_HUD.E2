@@ -1,0 +1,47 @@
+@name Target HUD
+@inputs E:wirelink
+@persist Players:array
+
+interval(75)
+
+if (first()|duped()){
+    E:egpClear()
+    
+    findByClass("player")
+    findSortByDistance(owner():pos())
+    Players = findToArray()
+    
+    for (Tracker=1,Players:count()){
+        Player = Players[Tracker,entity]
+        
+        Rect = Tracker+Players:count()
+        Name = Tracker+Players:count()*2
+        
+        E:egp3DTracker(Tracker,Player:pos())
+        
+        
+        E:egpBoxOutline(Rect, vec2(0,-Player:height()/2), vec2(0,0))
+        E:egpColor(Rect,vec(0,255,0))
+        
+        E:egpText(Name,Player:name(),vec2(-10,-Player:height()))
+        E:egpSize(Name,15)
+        
+        E:egpParent(Name,Tracker)
+        E:egpParent(Rect,Tracker)
+    }
+    
+    timer("reset",10000)
+}
+for (Tracker=1,Players:count()){
+    Player = Players[Tracker,entity]
+    X = Tracker+Players:count()
+    
+    Dist = Player:pos():distance(owner():pos())
+    
+    E:egpSize(X, vec2(40,50))
+    E:egpPos(Tracker,Player:pos())
+    
+}
+if (clk("reset")){
+    reset()
+}
