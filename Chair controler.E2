@@ -1,18 +1,47 @@
-@name Chair controler
-@inputs Active Forward Backward Right Left Speed Bearing Elevation ChangePlayer TargetClosestPlayer LockCamOnTarget
-@inputs S:wirelink Shield ShieldOn Power
-@outputs CamPos:vector AimPos:vector CamAng:angle Target:entity
-@persist CamPos:vector CamAng:angle N Failed Spying Obs:table
-@persist AncientChair:entity AncientChairBase:entity Target:entity
-
+@name Chair Controler 2
+@inputs Hud:wirelink PodControler:wirelink Camera:wirelink ChangePlayer
+@inputs Shield ShieldOn Power
+@outputs Target:entity CamPos:vector CamAng:angle AimPos:vector
+@persist Obs:table Target:entity CamPos:vector CamAng:angle AimPos:vector Failed N ChangePlayer Spying
+@trigger 
 
 function void setPos(V:vector){
     holoPos(1, holoEntity(1):toWorld(V))
 }
 
 
-if (first()|dupefinished()){
-    S:egpClear()
+W = PodControler:number("W")
+S = PodControler:number("S")
+A = PodControler:number("A")
+D = PodControler:number("D")
+R = PodControler:number("R")
+Shift = PodControler:number("Shift")
+
+Space = PodControler:number("Space")
+ChairActive = PodControler:number("Active")
+Bearing = PodControler:number("Bearing")
+Elevation = PodControler:number("Elevation")
+Attack = PodControler:number("Mouse1")
+Follow = PodControler:number("Mouse2")
+
+if (ChairActive){
+    interval(10)
+}
+else{
+    interval(1000)
+}
+
+holoAng(1,ang(vec(-Elevation, Bearing, 0)))
+
+if (first() | dupefinished()){
+    holoCreate(1)
+    holoShadow(1,0)
+    holoColor(1,vec(0,0,0),0)
+    
+    Failed = 0
+    N = 0
+    
+    Hud:egpClear()
     
     Obs = table()
     Obs["EBox",number] = 1
@@ -22,111 +51,74 @@ if (first()|dupefinished()){
     Obs["EPower",number] = 6
     Obs["EAtlantis",number] = 7
     
-    S:egpRoundedBox(Obs["EBox",number],vec2(350,190),vec2(200,200))
-    S:egpColor(Obs["EBox",number],vec4(0,0,0,150))
     
-    S:egpText(Obs["ETarget",number], "", vec2(256,256))
-    S:egpText(Obs["EWatch",number], "", vec2(256,220))
-    S:egpText(Obs["EPower",number], "", vec2(256,180))
-    S:egpText(Obs["EShield",number], "", vec2(256,140))
-    S:egpText(Obs["EAtlantis",number], "", vec2(256,120))
+    Hud:egpRoundedBox(Obs["EBox",number],vec2(350,190),vec2(200,200))
+    Hud:egpColor(Obs["EBox",number],vec4(0,0,0,150))
+    
+    Hud:egpText(Obs["ETarget",number], "", vec2(256,256))
+    Hud:egpText(Obs["EWatch",number], "", vec2(256,220))
+    Hud:egpText(Obs["EPower",number], "", vec2(256,180))
+    Hud:egpText(Obs["EShield",number], "", vec2(256,140))
+    Hud:egpText(Obs["EAtlantis",number], "", vec2(256,120))
     
     Spying = 0
-    Failed = 0
-    CamPos = entity():pos()
-    
-    holoCreate(1)
-    holoModel(1,"torus")
-    holoColor(1,vec(0,0,0),0)
-    holoPos(1, vec(0,0,0))
-    N = 0
-    
-    findByModel("models/MarkJaw/drone_chair/chair.mdl")
-    findSortByDistance(entity():pos())
-    AncientChair = find()
-    
-    findByModel("models/MarkJaw/drone_chair/chair_base.mdl")
-    findSortByDistance(entity():pos())
-    AncientChairBase = find()
-}
-if (Active&~Active&AncientChair){
-    interval(50)
-    AncientChair:setSkin(1)
-    AncientChairBase:setSkin(1)
-    AncientChair:soundPlay(0,0,"tech/chair2.wav")
-}
-elseif (~Active&AncientChair){
-    interval(700)
-    AncientChair:setSkin(0)
-    AncientChairBase:setSkin(0)
 }
 
-
-holoAng(1,ang(vec(-Elevation, Bearing, 0)))
-
-#start camera control
-if (LockCamOnTarget&~LockCamOnTarget&Target){
-    Spying = 1
-}
 if (Spying){
     holoPos(1, Target:toWorld(vec(0,0,80)))
-    if (Forward|Backward|Left|Right){
+    if (W|S|A|D){
         Spying = 0
     }
-}
-else{
-    if (Forward){
-        if (Speed){
+}else{
+    if (W){
+        if (Shift){
             setPos(vec(50,0,0))
         }
         else{
             setPos(vec(7,0,0))
         }
     }
-    elseif (Backward){
+    elseif (S){
         setPos(vec(-7,0,0))
     }
-    if (Left){
+    if (A){
         setPos(vec(0,5,0))
     }
-    elseif(Right){
+    elseif(D){
         setPos(vec(0,-5,0))
     }
-    #end camera control
-    
-    if (TargetClosestPlayer&~TargetClosestPlayer){
-        findByClass("player")
-        findSortByDistance(holoEntity(1):pos())
-        Target = find()
-        S:egpSetText(Obs["ETarget",number], "Target: "+Target:name())
-    }
-    if ((~ChangePlayer&ChangePlayer)|Failed){
-        findByClass("player")
-        findSortByDistance(entity():pos())
-        P = findResult((N%findCount())+1)
-        if (P:name() != ""){
-            S:egpText(Obs["EWatch",number], "Watching: "+P:name(), vec2(256,220))
-            holoPos(1,P:pos()+vec(0,0,100))
-            Failed = 0
-        }
-        else{
-            Failed = 1
-        }
-        N+=1
-    }
+}
+if (R){
+    findByClass("player")
+    findSortByDistance(holoEntity(1):pos())
+    Target = find()
+    Hud:egpSetText(Obs["ETarget",number], "Target: "+Target:name())
 }
 
-    
-CamAng = holoEntity(1):angles()
+if ((~ChangePlayer&ChangePlayer)|Failed){
+    findByClass("player")
+    findSortByDistance(entity():pos())
+    P = findResult((N%findCount())+1)
+    if (P:name() != ""){
+        Hud:egpText(Obs["EWatch",number], "Watching: "+P:name(), vec2(256,220))
+        holoPos(1,P:pos()+vec(0,0,100))
+        Failed = 0
+    }
+    else{
+        Failed = 1
+    }
+    N+=1
+}
+
+Hud:egpText(Obs["EShield",number], "Shields: "+toString(round(Shield))+"%", vec2(256,180))
+Hud:egpText(Obs["EPower",number], "Power: "+toString(round(Power))+"%", vec2(256,140))
+Hud:egpText(Obs["EAtlantis",number], "Shield online: "+toString(ShieldOn), vec2(256,100))
+
 CamPos = holoEntity(1):pos()
-    
-AimPos = rangerOffset(10000,CamPos,holoEntity(1):forward()):pos()
+CamAng = holoEntity(1):angles()
+Camera:setVector("Position",CamPos)
+Camera:setAngle("Angle",CamAng)
 
+#Camera:setAngle("Angle",ang(vec(-Elevation, Bearing, 0)))
 
-S:egpText(Obs["EShield",number], "Shields: "+toString(round(Shield))+"%", vec2(256,180))
-S:egpText(Obs["EPower",number], "Power: "+toString(round(Power))+"%", vec2(256,140))
-S:egpText(Obs["EAtlantis",number], "Shield online: "+toString(ShieldOn), vec2(256,100))
-
-#S:egpBox(10,vec2(600,500),vec2(100,100))
-#S:egpMaterial(10,"models/props_combine/tprings_globe")
-
+AimPos = rangerOffset(10000,holoEntity(1):pos(),holoEntity(1):forward()):pos()
