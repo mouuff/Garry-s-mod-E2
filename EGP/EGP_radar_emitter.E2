@@ -1,0 +1,90 @@
+@name EGP radar emitter
+@inputs E:wirelink
+@persist Players:array Center
+
+interval(50)
+
+function number isfriend(P1:entity,P2:entity){
+    Friends = P1:friends()
+    for (F=1,Friends:count()){
+        if (Friends[F,entity] == P2){
+            return 1
+        }
+    }
+    return 0
+}
+
+if (first()|dupefinished()){
+    Center = 250
+    E:egpClear()
+    
+    E:egpCircle(1,vec2(Center,Center),vec2(150,150))
+    E:egpColor(1,vec(0,0,0))
+    E:egpAlpha(1,150)
+    
+    E:egpCircle(2,vec2(Center,Center),vec2(4,4))
+    E:egpColor(2,vec(33,255,0))
+
+    
+    holoCreate(1)
+    holoColor(1,vec(0,0,0),0)
+    
+    timer("reset",10000)
+}
+
+
+
+holoPos(1,entity():pos())
+holoAng(1,entity():angles()+ang(vec(180,90,0)))
+Me = holoEntity(1)
+
+
+findByClass("player")
+findSortByDistance(Me:pos())
+Players = findToArray()
+PC = Players:count()
+
+for (X=1, PC){
+    Player = Players[X,entity]
+    
+    #[
+    PID = Player:id()
+    RawWeapon = Player:weapon():model():explode("/")
+    Weapon = RawWeapon[RawWeapon:count(),string]:explode(".")[1,string]
+    ]#
+    if (isfriend(owner(),Player)){
+        DotColor = vec(0,255,0)
+    }
+    else{
+        DotColor = vec(255,0,0)
+    }
+    
+    if (Player:pos():distance(Me:pos())<1500){
+        
+        Vec = Me:toLocal(Player:pos())/10
+        Vec2 = vec2(Vec:x()+Center,Vec:y()+Center)
+        
+        E:egpCircle(PC*X,Vec2,vec2(3,3))
+        
+        E:egpColor(PC*X,vec(255,0,0))
+        
+
+        E:egpText(PC*X+1,Player:name(),Vec2+vec2(5,5))
+        E:egpSize(PC*X+1,15)
+        
+        #[
+        E:egpText(PC*4,"Health: "+toString(Player:health()),Vec2+vec2(10,15))
+        E:egpSize(PC*4,13)
+        
+        E:egpText(PC*5,"Weapon: "+Weapon,Vec2+vec2(10,25))
+        E:egpSize(PC*5,13)
+        ]#
+    }
+}
+
+if (clk("reset")){
+    reset()
+}
+
+
+

@@ -23,6 +23,7 @@ Bearing = PodControler:number("Bearing")
 Elevation = PodControler:number("Elevation")
 Attack = PodControler:number("Mouse1")
 Follow = PodControler:number("Mouse2")
+Light = PodControler:number("Light")
 
 if (ChairActive){
     interval(10)
@@ -70,6 +71,9 @@ if (Spying){
         Spying = 0
     }
 }else{
+    if (Light){
+        Spying = 1
+    }
     if (W){
         if (Shift){
             setPos(vec(50,0,0))
