@@ -1,0 +1,66 @@
+@name Rings holo
+@inputs Ring:entity Active RingRange
+@outputs RingDestPos:vector
+@persist RingDestPos:vector
+
+
+
+
+if (first()|dupefinished()){
+    #ring indication holo
+    holoCreate(1)
+    
+    #ifdef holoAnim()
+    holoModel(1,"torus")
+    holoScale(1,vec(10,10,0.1))
+    #else
+    holoModel(1,"models/Madman07/ancient_rings/cover.mdl")
+    #endif
+    
+    holoPos(1,entity():pos())
+    holoAng(1,ang(vec(0,0,0)))
+    
+    #ranger holo
+    holoCreate(2)
+    holoShadow(2,0)
+    holoModel(2,"pyramid")
+    holoScale(2,vec(3,0.1,0.1))#better for debugging
+    holoColor(2,vec(0,0,0),0)#hide it
+}
+if (RingRange){
+    Range = RingRange
+}
+else{
+    Range = 1000
+}
+
+#ranger
+rangerHitEntities(0)
+Ranger = rangerOffset(Range,holoEntity(2):pos(),holoEntity(2):forward())
+RingDestPos = Ranger:pos()
+
+#updating holo ranger pos/ang
+holoPos(2,Ring:toWorld(vec(0,0,50)))
+holoAng(2,Ring:toWorld(ang(vec(-90,90,90))))
+
+
+#find if any player is around
+findByClass("player")
+findSortByDistance(RingDestPos)
+ClosestPlayer = find()
+
+if (ClosestPlayer:pos():distance(RingDestPos)<500){
+    InRange = 1
+}
+
+if ((Active|InRange)&Ranger:hitWorld()){
+    interval(50)
+    
+    holoAlpha(1,100)
+    holoPos(1,RingDestPos)
+}
+else{
+    interval(500)
+    holoAlpha(1,0)
+}
+
