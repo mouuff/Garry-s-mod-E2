@@ -1,0 +1,104 @@
+@model models/markjaw/atlantis_holo/holo.mdl	
+@name Holographic radar
+@inputs HoloOutput:vector ScanPos:vector ScanRange HoloScale
+@outputs 
+@persist HoloDest:entity HoloScan:entity Output:vector ScanPos:vector Range Scale
+@trigger 
+
+interval(250)
+
+if (first()|dupefinished()){
+    #holo for holo emitter
+    holoCreate(0)
+    holoPos(0,entity():toWorld(vec(0,0,50)))
+    holoAng(0,entity():angles())
+    holoParent(0,entity())
+    holoAlpha(0,0)
+    
+    #holo for scanning
+    holoCreate(1)
+    #holoPos(1,findPlayerByName("alex"):pos())
+    holoPos(1,entity():toWorld(vec(0,0,50)))
+    holoAlpha(1,0)
+    
+    HoloDest = holoEntity(0)
+    HoloScan = holoEntity(1)
+    
+    Scale = 5
+    Range = 1000
+    
+    timer("reset",10000)
+}
+
+#####START Manage wire inputs#####
+if (HoloOutput){
+    holoPos(0,HoloOutput)
+}
+else{
+    holoPos(0,entity():toWorld(vec(0,0,50)))
+}
+
+if (ScanPos){
+    holoPos(1,ScanPos)
+}
+else{
+    holoPos(1,entity():toWorld(vec(0,0,50)))
+}
+if (ScanRange){
+    Range = ScanRange
+}
+else{
+    Range = 1000
+}
+if (HoloScale){
+    Scale = HoloScale
+}
+else{
+    Scale = 5
+}
+
+#####END Manage wire inputs#####
+
+#[
+findIncludeEntity(Ent)
+findIncludeClass("player")
+findIncludeClass("stargate")
+findIncludeClass("teltak")
+]#
+
+findInSphere(HoloScan:pos(),Range)
+
+#findSortByDistance(Center:pos())
+
+Entities = findToArray()
+
+
+for (X=1, Entities:count()){
+    Entity = Entities[X,entity]
+    
+    if (Entity:volume()>5000|Entity:isPlayer()){
+        ID = Entity:id()+1
+
+        #print(Entity:id())
+        
+        Pos = HoloScan:toLocal(Entity:pos())/Scale
+        Ang = Entity:angles()
+        
+        holoCreate(ID)
+        holoModel(ID,Entity:model())
+        holoScale(ID,vec(1,1,1)/Scale)
+        
+        #[
+        holoAng(X,entity():toWorld(Ang))
+        holoPos(X,entity():toWorld(Pos+vec(0,0,80)))
+        ]#
+        
+        holoAng(ID,HoloDest:toWorld(Ang))
+        holoPos(ID,HoloDest:toWorld(Pos))
+    }
+}
+
+
+if (clk("reset")){
+    reset()
+}
