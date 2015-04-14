@@ -3,26 +3,15 @@
 @inputs E:wirelink
 @inputs ScanPos:vector HoloOutput:vector ScanRange HoloScale Reset
 @outputs Entities:array
-@persist Output:vector ScanPos:vector Range Scale LastHolos:array Holos:array
-@persist BlackList:array EgpPlayers:table HoloDest:entity HoloScan:entity
+@persist Output:vector ScanPos:vector Range Scale
+@persist BlackList:array HoloDest:entity HoloScan:entity
 @trigger 
 
-
-function number findInArray(R:array,N:number){
-    for (I=1,R:count()){
-        if (N == R[I,number]){
-            return I
-        }
-    }
-    return -1
-}
 
 interval(250)
 
 if (first()|dupefinished()){
     E:egpClear()
-    
-    Holos = array()
     
     entity():setColor(vec(50,50,50))
     #holo for holo emitter
@@ -42,32 +31,8 @@ if (first()|dupefinished()){
     HoloDest = holoEntity(0)
     HoloScan = holoEntity(1)
     
-    Scale = 5
-    Range = 1000
-    
-    findByClass("player")
-    findSortByDistance(HoloScan:pos())
-    Players = findToArray()
-    
-    for (X=1,Players:count()){
-        Player = Players[X,entity]
-        #print(Players:count())
-        if (Player:pos():distance(HoloScan:pos())<Range){
-            EgpPlayers[Player:name(),number] = Player:id()
-            ID = Player:id()
-            Name = Players:count()+Player:id()
-                  
-            E:egp3DTracker(ID,Player:pos())
-            
-            E:egpText(Name,Player:name(),vec2(0,0))
-            E:egpSize(Name,15)
-            
-            E:egpParent(Name,ID)
-        }
-    }
-    
     timer("IO",0)
-    #timer("reset",5000)
+    timer("reset",5000)
 }
 
 #####START Manage wire inputs#####
@@ -75,21 +40,21 @@ if (ScanPos){
     holoPos(1,ScanPos)
 }
 else{
-    holoPos(1,entity():toWorld(vec(0,0,10)))
+    holoPos(1,entity():toWorld(vec(0,0,50)))
 }
 if (clk("IO")){
     if (HoloOutput){
         holoPos(0,HoloOutput)
     }
     else{
-        holoPos(0,entity():toWorld(vec(0,0,100)))
+        holoPos(0,entity():toWorld(vec(0,0,50)))
     }
     
     if (ScanRange){
         Range = ScanRange
     }
     else{
-        Range = 2000
+        Range = 1000
     }
     if (HoloScale){
         Scale = HoloScale
@@ -98,9 +63,6 @@ if (clk("IO")){
         Scale = 5
     }
     
-    if (Reset){
-        reset()
-    }
     timer("IO",1000)
 }
 #####END Manage wire inputs#####
@@ -123,18 +85,16 @@ findSortByDistance(HoloScan:pos())
 
 Entities = findToArray()
 
-LastHolos = Holos
-Holos = array()
-
 X = 1
-while (X < Entities:count() & perf(80)){
+
+while (X < Entities:count() & perf()){
     Entity = Entities[X,entity]
 
     if (Entity:volume()>20000|Entity:isPlayer()){
         ID = Entity:id()+5#+5 (you can add 5 holo before it)
 
-        Holos[Holos:count()+1,number] = ID
-        LastHolos:remove(findInArray(LastHolos,ID))
+        #print(Entity:id())
+        
         
         holoCreate(ID)
         holoModel(ID,Entity:model())
@@ -151,7 +111,16 @@ while (X < Entities:count() & perf(80)){
         holoPos(ID,WorldPos)
         
         if (Entity:isPlayer()){
-            E:egpPos(EgpPlayers[Entity:name(),number],WorldPos)
+            Name = players():count()+ID
+                  
+            E:egp3DTracker(ID,Entity:pos())
+            
+            E:egpText(Name,Entity:name(),vec2(0,0))
+            E:egpSize(Name,15)
+            
+            E:egpParent(Name,ID)
+            
+            E:egpPos(ID,WorldPos)
         }
     }
     else{
@@ -160,9 +129,6 @@ while (X < Entities:count() & perf(80)){
     X += 1
 }
 
-for (X=1, LastHolos:count()){
-    holoDelete(LastHolos[X,number])
-}
 
 
 
