@@ -1,13 +1,17 @@
-@model models/markjaw/atlantis_holo/holo.mdl	
+@model models/Boba_Fett/props/sodan_ring.mdl
 @name Holographic radar
-@inputs HoloOutput:vector ScanPos:vector ScanRange HoloScale
-@outputs 
-@persist HoloDest:entity HoloScan:entity Output:vector ScanPos:vector Range Scale
+@inputs E:wirelink
+@inputs ScanPos:vector HoloOutput:vector ScanRange HoloScale Reset
+@outputs Entities:array
+@persist Output:vector ScanPos:vector Range Scale
+@persist BlackList:array EgpPlayers:table HoloDest:entity HoloScan:entity
 @trigger 
 
-interval(250)
 
 if (first()|dupefinished()){
+    E:egpClear()
+    
+    entity():setColor(vec(50,50,50))
     #holo for holo emitter
     holoCreate(0)
     holoPos(0,entity():toWorld(vec(0,0,50)))
@@ -21,13 +25,36 @@ if (first()|dupefinished()){
     holoPos(1,entity():toWorld(vec(0,0,50)))
     holoAlpha(1,0)
     
+    
     HoloDest = holoEntity(0)
     HoloScan = holoEntity(1)
     
     Scale = 5
-    Range = 1000
+    Range = 2000
     
-    timer("reset",10000)
+    findByClass("player")
+    findSortByDistance(HoloScan:pos())
+    Players = findToArray()
+    
+    for (X=1,Players:count()){
+        Player = Players[X,entity]
+        #print(Players:count())
+        if (Player:pos():distance(HoloScan:pos())<Range){
+            EgpPlayers[Player:name(),number] = Player:id()
+            ID = Player:id()
+            Name = Players:count()+Player:id()
+                  
+            E:egp3DTracker(ID,Player:pos())
+            
+            E:egpText(Name,Player:name(),vec2(0,0))
+            E:egpSize(Name,15)
+            
+            E:egpParent(Name,ID)
+        }
+    }
+    
+    
+    timer("reset",5000)
 }
 
 #####START Manage wire inputs#####
@@ -48,13 +75,17 @@ if (ScanRange){
     Range = ScanRange
 }
 else{
-    Range = 1000
+    Range = 2000
 }
 if (HoloScale){
     Scale = HoloScale
 }
 else{
     Scale = 5
+}
+
+if (Reset){
+    reset()
 }
 
 #####END Manage wire inputs#####
@@ -66,6 +97,10 @@ findIncludeClass("stargate")
 findIncludeClass("teltak")
 ]#
 
+findExcludeClass("gmod_*")
+findExcludeClass("weapon_*")
+findExcludeClass("energy_*")
+findExcludeEntities(BlackList)
 findInSphere(HoloScan:pos(),Range)
 
 #findSortByDistance(Center:pos())
@@ -75,30 +110,41 @@ Entities = findToArray()
 
 for (X=1, Entities:count()){
     Entity = Entities[X,entity]
-    
-    if (Entity:volume()>5000|Entity:isPlayer()){
-        ID = Entity:id()+1
+
+    if (Entity:volume()>20000|Entity:isPlayer()){
+        ID = Entity:id()+5#+5 (you can add 5 holo before it)
 
         #print(Entity:id())
         
-        Pos = HoloScan:toLocal(Entity:pos())/Scale
-        Ang = Entity:angles()
+        LocalPos = HoloScan:toLocal(Entity:pos())/Scale
+        LocalAng = Entity:angles()
         
         holoCreate(ID)
         holoModel(ID,Entity:model())
         holoScale(ID,vec(1,1,1)/Scale)
         
-        #[
-        holoAng(X,entity():toWorld(Ang))
-        holoPos(X,entity():toWorld(Pos+vec(0,0,80)))
-        ]#
         
-        holoAng(ID,HoloDest:toWorld(Ang))
-        holoPos(ID,HoloDest:toWorld(Pos))
+        WorldPos = HoloDest:toWorld(LocalPos)
+        WorldAng = HoloDest:toWorld(LocalAng)
+        
+        holoAng(ID,WorldAng)
+        holoPos(ID,WorldPos)
+        
+        if (Entity:isPlayer()){
+            E:egpPos(EgpPlayers[Entity:name(),number],WorldPos)
+        }
     }
+    else{
+        BlackList[BlackList:count()+1,entity] = Entity
+    }
+    
 }
+
+
 
 
 if (clk("reset")){
     reset()
 }
+
+
