@@ -3,12 +3,12 @@
 @inputs E:wirelink
 @inputs ScanPos:vector HoloOutput:vector ScanRange HoloScale Reset
 @outputs Entities:array
-@persist Output:vector ScanPos:vector Range Scale
+@persist Output:vector ScanPos:vector Range Scale LastHolos:array Holos:array
 @persist BlackList:array EgpPlayers:table HoloDest:entity HoloScan:entity
 @trigger 
 
 
-interval(400)
+interval(250)
 
 if (first()|dupefinished()){
     E:egpClear()
@@ -60,6 +60,12 @@ if (first()|dupefinished()){
 }
 
 #####START Manage wire inputs#####
+if (ScanPos){
+    holoPos(1,ScanPos)
+}
+else{
+    holoPos(1,entity():toWorld(vec(0,0,50)))
+}
 if (clk("IO")){
     if (HoloOutput){
         holoPos(0,HoloOutput)
@@ -68,17 +74,11 @@ if (clk("IO")){
         holoPos(0,entity():toWorld(vec(0,0,50)))
     }
     
-    if (ScanPos){
-        holoPos(1,ScanPos)
-    }
-    else{
-        holoPos(1,entity():toWorld(vec(0,0,50)))
-    }
     if (ScanRange){
         Range = ScanRange
     }
     else{
-        Range = 2000
+        Range = 1000
     }
     if (HoloScale){
         Scale = HoloScale
@@ -108,15 +108,16 @@ findExcludeClass("energy_*")
 findExcludeEntities(BlackList)
 findInSphere(HoloScan:pos(),Range)
 
-#findSortByDistance(Center:pos())
+findSortByDistance(HoloScan:pos())
 
 Entities = findToArray()
 
+X = 1
 
-for (X=1, Entities:count()){
+while (X < Entities:count() & perf()){
     Entity = Entities[X,entity]
 
-    if (Entity:volume()>40000|Entity:isPlayer()){
+    if (Entity:volume()>20000|Entity:isPlayer()){
         ID = Entity:id()+5#+5 (you can add 5 holo before it)
 
         #print(Entity:id())
@@ -143,7 +144,7 @@ for (X=1, Entities:count()){
     else{
         BlackList[BlackList:count()+1,entity] = Entity
     }
-    
+    X += 1
 }
 
 
@@ -152,4 +153,3 @@ for (X=1, Entities:count()){
 if (clk("reset")){
     reset()
 }
-
