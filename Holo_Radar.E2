@@ -1,13 +1,14 @@
 @model models/Boba_Fett/props/sodan_ring.mdl
 @name Holographic radar
 @inputs E:wirelink
-@inputs ScanPos:vector HoloOutput:vector ScanRange HoloScale SetAlpha Reset
-@outputs 
-@persist Output:vector ScanPos:vector Range Scale Alpha MaxOps MaxVolume
-@persist BlackList:array EgpPlayers:table Ids:array Ents:array HoloDest:entity HoloScan:entity
+@inputs ScanPos:vector HoloOutput:vector ScanRange HoloScale Reset
+@outputs Entities:array
+@persist Output:vector ScanPos:vector Range Scale
+@persist BlackList:array EgpPlayers:table HoloDest:entity HoloScan:entity
 @trigger 
 
-interval(200)
+
+interval(400)
 
 if (first()|dupefinished()){
     E:egpClear()
@@ -31,76 +32,8 @@ if (first()|dupefinished()){
     HoloScan = holoEntity(1)
     
     Scale = 5
-    Alpha = 255
-    MaxOps = 500
-    MaxVolume = 20000
+    Range = 1000
     
-    
-    timer("reload",0)
-    timer("reset",15000)
-}
-
-#####START Manage wire inputs#####
-if (->HoloOutput){
-    holoPos(0,HoloOutput)
-}
-else{
-    holoPos(0,entity():toWorld(vec(0,0,50)))
-}
-
-if (->ScanPos){
-    holoPos(1,ScanPos)
-}
-else{
-    holoPos(1,entity():toWorld(vec(0,0,50)))
-}
-if (->ScanRange){
-    Range = ScanRange
-}
-else{
-    Range = 750
-}
-if (->HoloScale){
-    Scale = HoloScale
-}
-else{
-    Scale = 5
-}
-
-if (->SetAlpha){
-    Alpha = SetAlpha
-}
-
-if (Reset){
-    reset()
-}
-
-#####END Manage wire inputs#####
-
-I = 1
-while (I < Ids:count()&ops()<MaxOps){
-    ID = Ids[I,number]
-    Entity = Ents[I,entity]
-    
-    LocalPos = HoloScan:toLocal(Entity:pos())/Scale
-    LocalAng = Entity:angles()
-    
-    WorldPos = HoloDest:toWorld(LocalPos)
-    WorldAng = HoloDest:toWorld(LocalAng)
-            
-    holoAng(ID,WorldAng)
-    holoPos(ID,WorldPos)
-    
-    if (Entity:isPlayer()){
-        E:egpPos(EgpPlayers[Entity:name(),number],WorldPos)
-    }
-    
-    I += 1
-}
-
-
-if (clk("reload")){
-    ###### START egp names ######
     findByClass("player")
     findSortByDistance(HoloScan:pos())
     Players = findToArray()
@@ -121,59 +54,102 @@ if (clk("reload")){
             E:egpParent(Name,ID)
         }
     }
-    ###### END egp names ######
     
-    findExcludeClass("gmod_*")
-    findExcludeClass("weapon_*")
-    findExcludeClass("energy_*")
-    findExcludeClass("shield_*")
-    findExcludeEntities(BlackList)
-    findInSphere(HoloScan:pos(),Range)
-    
-    #findSortByDistance(Center:pos())
-    
-    Entities = findToArray()
-    
-    
-    for (X=1, Entities:count()){
-        Entity = Entities[X,entity]
-    
-        if (Entity:volume()>MaxVolume|Entity:isPlayer()){
-            
-            ID = Entity:id()+5#+5 (you can add 5 holo before it)
-            #print(Entity:id())
-            
-            Ids[Ids:count()+1, number] = ID
-            Ents[Ents:count()+1, entity] = Entity
-            
-            LocalPos = HoloScan:toLocal(Entity:pos())/Scale
-            LocalAng = Entity:angles()
-            
-            holoCreate(ID)
-            holoModel(ID,Entity:model())
-            holoScale(ID,vec(1,1,1)/Scale)
-            holoAlpha(ID,Alpha)
-            
-            
-            WorldPos = HoloDest:toWorld(LocalPos)
-            WorldAng = HoloDest:toWorld(LocalAng)
-            
-            holoAng(ID,WorldAng)
-            holoPos(ID,WorldPos)
-            
-        }
-        else{
-            BlackList[BlackList:count()+1,entity] = Entity
-        }
-        
-    }
-    timer("reload",1500)
+    timer("IO",0)
+    timer("reset",5000)
 }
+
+#####START Manage wire inputs#####
+if (clk("IO")){
+    if (HoloOutput){
+        holoPos(0,HoloOutput)
+    }
+    else{
+        holoPos(0,entity():toWorld(vec(0,0,50)))
+    }
+    
+    if (ScanPos){
+        holoPos(1,ScanPos)
+    }
+    else{
+        holoPos(1,entity():toWorld(vec(0,0,50)))
+    }
+    if (ScanRange){
+        Range = ScanRange
+    }
+    else{
+        Range = 2000
+    }
+    if (HoloScale){
+        Scale = HoloScale
+    }
+    else{
+        Scale = 5
+    }
+    
+    if (Reset){
+        reset()
+    }
+    timer("IO",1000)
+}
+#####END Manage wire inputs#####
+
+#[
+findIncludeEntity(Ent)
+findIncludeClass("player")
+findIncludeClass("stargate")
+findIncludeClass("teltak")
+]#
+
+findExcludeClass("gmod_*")
+findExcludeClass("weapon_*")
+findExcludeClass("shield_*")
+findExcludeClass("energy_*")
+findExcludeEntities(BlackList)
+findInSphere(HoloScan:pos(),Range)
+
+#findSortByDistance(Center:pos())
+
+Entities = findToArray()
+
+
+for (X=1, Entities:count()){
+    Entity = Entities[X,entity]
+
+    if (Entity:volume()>40000|Entity:isPlayer()){
+        ID = Entity:id()+5#+5 (you can add 5 holo before it)
+
+        #print(Entity:id())
+        
+        
+        holoCreate(ID)
+        holoModel(ID,Entity:model())
+        holoMaterial(ID,Entity:getMaterial())
+        holoScale(ID,vec(1,1,1)/Scale)
+        
+        LocalPos = HoloScan:toLocal(Entity:pos())/Scale
+        LocalAng = HoloScan:toLocal(Entity:angles())
+        
+        WorldPos = HoloDest:toWorld(LocalPos)
+        WorldAng = HoloDest:toWorld(LocalAng)
+        
+        holoAng(ID,WorldAng)
+        holoPos(ID,WorldPos)
+        
+        if (Entity:isPlayer()){
+            E:egpPos(EgpPlayers[Entity:name(),number],WorldPos)
+        }
+    }
+    else{
+        BlackList[BlackList:count()+1,entity] = Entity
+    }
+    
+}
+
 
 
 
 if (clk("reset")){
     reset()
 }
-
 
