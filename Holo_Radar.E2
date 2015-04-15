@@ -1,19 +1,52 @@
-@model models/Boba_Fett/props/orb.mdl
+@model models/props_phx/construct/metal_angle360.mdl
 @name Holographic radar
 @inputs E:wirelink
-@inputs ScanPos:vector HoloOutput:vector ScanRange HoloScale Reset
+@inputs Active ScanPos:vector HoloOutput:vector ScanRange HoloScale
 @outputs Entities:array
-@persist Output:vector ScanPos:vector Range Scale
-@persist BlackList:array HoloDest:entity HoloScan:entity
+@persist ScanPos:vector Range Scale
+@persist BlackList:array
 @trigger 
 
 
-interval(250)
+
+interval(500)
 
 if (first()|dupefinished()){
-    E:egpClear()
-    
     entity():setColor(vec(50,50,50))
+    
+    #ifdef holoAnim()
+    hint("This E2 can't run on this server, you need to enable holo")
+    #endif
+}
+
+#####START Manage wire inputs#####
+
+if (->ScanRange){
+    Range = ScanRange
+}
+else{
+    Range = 1000
+}
+if (->HoloScale){
+    Scale = HoloScale
+}
+else{
+    Scale = 8
+}
+
+
+#####END Manage wire inputs#####
+if (!Active&~Active){
+    soundStop(0)
+    #entity():soundPlay(1,0,"bail/aaah.mp3")
+    entity():soundPlay(1,0,"common/warning.wav")
+    E:egpClear()
+    holoDeleteAll()
+}
+if (Active&~Active){
+    entity():soundPlay(1,0,"tech/asgard_holo.wav")
+    entity():soundPlay(0,0,"npc/scanner/combat_scan_loop2.wav")
+    
     #holo for holo emitter
     holoCreate(0)
     holoPos(0,entity():toWorld(vec(0,0,50)))
@@ -23,115 +56,95 @@ if (first()|dupefinished()){
     
     #holo for scanning
     holoCreate(1)
-    #holoPos(1,findPlayerByName("alex"):pos())
     holoPos(1,entity():toWorld(vec(0,0,50)))
     holoAlpha(1,0)
     
+    if (->HoloOutput){
+        holoPos(0,HoloOutput)
+    }
+    else{
+        holoPos(0,entity():toWorld(vec(0,0,60)))
+    }
+    if (->ScanPos){
+        holoPos(1,ScanPos)
+    }
+    else{
+        holoPos(1,entity():pos())
+    }
     
     HoloDest = holoEntity(0)
     HoloScan = holoEntity(1)
     
-    timer("IO",0)
-    timer("reset",5000)
-}
-
-#####START Manage wire inputs#####
-if (ScanPos){
-    holoPos(1,ScanPos)
-}
-else{
-    holoPos(1,entity():toWorld(vec(0,0,50)))
-}
-if (clk("IO")){
-    if (HoloOutput){
-        holoPos(0,HoloOutput)
-    }
-    else{
-        holoPos(0,entity():toWorld(vec(0,0,50)))
-    }
+    findExcludeClass("gmod_*")
+    findExcludeClass("weapon_*")
+    findExcludeClass("shield_*")
+    findExcludeClass("energy_*")
+    findExcludeEntities(BlackList)
+    findInSphere(HoloScan:pos(),Range)
     
-    if (ScanRange){
-        Range = ScanRange
-    }
-    else{
-        Range = 1000
-    }
-    if (HoloScale){
-        Scale = HoloScale
-    }
-    else{
-        Scale = 5
-    }
+    findSortByDistance(HoloScan:pos())
     
-    timer("IO",1000)
-}
-#####END Manage wire inputs#####
-
-#[
-findIncludeEntity(Ent)
-findIncludeClass("player")
-findIncludeClass("stargate")
-findIncludeClass("teltak")
-]#
-
-findExcludeClass("gmod_*")
-findExcludeClass("weapon_*")
-findExcludeClass("shield_*")
-findExcludeClass("energy_*")
-findExcludeEntities(BlackList)
-findInSphere(HoloScan:pos(),Range)
-
-findSortByDistance(HoloScan:pos())
-
-Entities = findToArray()
-
-X = 1
-
-while (X < Entities:count() & perf()){
-    Entity = Entities[X,entity]
-
-    if (Entity:volume()>20000|Entity:isPlayer()){
-        ID = Entity:id()+5#+5 (you can add 5 holo before it)
-
-        #print(Entity:id())
-        
-        
-        holoCreate(ID)
-        holoModel(ID,Entity:model())
-        holoMaterial(ID,Entity:getMaterial())
-        holoScale(ID,vec(1,1,1)/Scale)
-        
-        LocalPos = HoloScan:toLocal(Entity:pos())/Scale
-        LocalAng = HoloScan:toLocal(Entity:angles())
-        
-        WorldPos = HoloDest:toWorld(LocalPos)
-        WorldAng = HoloDest:toWorld(LocalAng)
-        
-        holoAng(ID,WorldAng)
-        holoPos(ID,WorldPos)
-        
-        if (Entity:isPlayer()){
-            Name = players():count()+ID
-                  
-            E:egp3DTracker(ID,Entity:pos())
+    Entities = findToArray()
+    
+    X = 1
+    
+    while (X < Entities:count() & perf()){
+        Entity = Entities[X,entity]
+    
+        if (Entity:volume()>20000|Entity:isPlayer()){
+            ID = Entity:id()+5#+5 (you can add 5 holo before it)
+    
+            #print(Entity:id())
             
-            E:egpText(Name,Entity:name(),vec2(0,0))
-            E:egpSize(Name,15)
+            holoCreate(ID)
+            holoModel(ID,Entity:model())
+            holoMaterial(ID,Entity:getMaterial())
+            holoScale(ID,vec(1,1,1)/Scale)
             
-            E:egpParent(Name,ID)
+            LocalPos = HoloScan:toLocal(Entity:pos())/Scale
+            LocalAng = HoloScan:toLocal(Entity:angles())
             
-            E:egpPos(ID,WorldPos)
+            WorldPos = HoloDest:toWorld(LocalPos)
+            WorldAng = HoloDest:toWorld(LocalAng)
+            
+            holoAng(ID,WorldAng)
+            holoPos(ID,WorldPos)
+            
+            
+            holoParent(ID,HoloDest)
+            
+            ######## START EGP Texts ########
+            EgpPrint = 0
+            #ifdef stargateSystemType()
+            if (Entity:stargateName()){
+                EgpPrint = 1
+                EgpName = Entity:stargateName()
+            }
+            #endif
+            if (Entity:isPlayer()){
+                
+                EgpPrint = 1
+                EgpName = Entity:name()
+            }
+            if (EgpPrint){
+                TrackerId = X
+                NameId = X+Entities:count()
+                      
+                E:egp3DTracker(TrackerId,Entity:pos())
+                
+                E:egpText(NameId,EgpName,vec2(0,0))
+                E:egpSize(NameId,15)
+                
+                E:egpParent(NameId,TrackerId)
+                
+                E:egpPos(TrackerId,WorldPos)
+            }
+            ######## END EGP Texts ########
         }
+        else{
+            BlackList[BlackList:count()+1,entity] = Entity
+        }
+        X += 1
     }
-    else{
-        BlackList[BlackList:count()+1,entity] = Entity
-    }
-    X += 1
 }
 
-
-
-
-if (clk("reset")){
-    reset()
-}

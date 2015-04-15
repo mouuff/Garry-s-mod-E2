@@ -9,15 +9,16 @@ interval(100)
 if (first()|dupefinished()){
     Activate = 0
     Strength = 3
-    U = owner()
     HistoryTxt = "|"
     timer("Get",1000)
     timer("reload_egp",0)
 }
+if (E:entity("User")){
+    U = E:entity("User")
+}
 
 
-
-if(owner():keyUse()){print(E:egpCursor(owner()))}
+#if(owner():keyUse()){print(E:egpCursor(owner()))}
 
 
 if (ChairMode){
@@ -164,10 +165,6 @@ if (clk("reload_egp")){
 }
 
 if (clk("Get")){
-    findByClass("player")
-    findSortByDistance(entity():pos())
-    U = find()
-    
     ST = toString(round(ShieldPercent))
     HistoryTxt = "|"+ST+HistoryTxt
     E:egpSetText(History,HistoryTxt)
