@@ -3,7 +3,7 @@
 @inputs E:wirelink
 @inputs Active ScanPos:vector HoloOutput:vector ScanRange HoloScale
 @outputs Entities:array
-@persist ScanPos:vector Range Scale
+@persist ScanPos:vector Entities:array Range Scale
 @persist BlackList:array
 @trigger 
 
@@ -25,13 +25,13 @@ if (->ScanRange){
     Range = ScanRange
 }
 else{
-    Range = 1000
+    Range = 2000
 }
 if (->HoloScale){
     Scale = HoloScale
 }
 else{
-    Scale = 8
+    Scale = 10
 }
 
 
@@ -79,6 +79,7 @@ if (Active&~Active){
     findExcludeClass("weapon_*")
     findExcludeClass("shield_*")
     findExcludeClass("energy_*")
+    findExcludeClass("cloak_*")
     findExcludeEntities(BlackList)
     findInSphere(HoloScan:pos(),Range)
     
@@ -120,6 +121,10 @@ if (Active&~Active){
                 EgpPrint = 1
                 EgpName = Entity:stargateName()
             }
+            if (Entity:stargateRingAddress()){
+                EgpPrint = 1
+                EgpName = "Rings: " + Entity:stargateRingAddress()
+            }
             #endif
             if (Entity:isPlayer()){
                 
@@ -134,6 +139,7 @@ if (Active&~Active){
                 
                 E:egpText(NameId,EgpName,vec2(0,0))
                 E:egpSize(NameId,15)
+                E:egpColor(NameId,vec(170,170,255))
                 
                 E:egpParent(NameId,TrackerId)
                 
