@@ -3,7 +3,7 @@
 @inputs E:wirelink
 @inputs Active ScanPos:vector HoloOutput:vector ScanRange HoloScale
 @outputs Entities:array
-@persist ScanPos:vector Entities:array Range Scale
+@persist ScanPos:vector Entities:array Range Scale MinSize
 @persist BlackList:array
 @trigger 
 
@@ -13,6 +13,9 @@ interval(500)
 
 if (first()|dupefinished()){
     entity():setColor(vec(50,50,50))
+    
+    MinSize = 1#everything, if E2 crash reduce it (it shouldn't)
+    #20000
     
     #ifdef holoAnim()
     hint("This E2 can't run on this server, you need to enable holo")
@@ -75,7 +78,7 @@ if (Active&~Active){
     HoloDest = holoEntity(0)
     HoloScan = holoEntity(1)
     
-    findExcludeClass("gmod_*")
+    #findExcludeClass("gmod_*")
     findExcludeClass("weapon_*")
     findExcludeClass("shield_*")
     findExcludeClass("energy_*")
@@ -92,7 +95,7 @@ if (Active&~Active){
     while (X < Entities:count() & perf()){
         Entity = Entities[X,entity]
     
-        if (Entity:volume()>20000|Entity:isPlayer()){
+        if (Entity:volume()>MinSize|Entity:isPlayer()){
             ID = Entity:id()+5#+5 (you can add 5 holo before it)
     
             #print(Entity:id())
