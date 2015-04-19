@@ -1,21 +1,31 @@
-@model models/props_phx/construct/metal_angle360.mdl
 @name Holographic radar
 @inputs E:wirelink
-@inputs Active ScanPos:vector HoloOutput:vector ScanRange HoloScale
-@outputs Entities:array
-@persist ScanPos:vector Entities:array Range Scale MinSize
-@persist BlackList:array
-@trigger 
+@inputs Active ScanPos:vector HoloOutput:vector
+@inputs ScanRange HoloScale Transparent SaveTarget Next Previous
+
+@outputs Target:entity SavedTarget:entity
+
+@persist ScanPos:vector Target:entity Scanned:array Holos:array
+@persist BlackList:array Range Scale MinSize MinTargetSize Index Props Alpha
 
 
 
-interval(500)
+
+interval(100)
 
 if (first()|dupefinished()){
-    entity():setColor(vec(50,50,50))
+    #entity():setColor(vec(50,50,50))
     
-    MinSize = 1#everything, if E2 crash reduce it (it shouldn't)
-    #20000
+    MinSize = 5000
+    #the smallest number you set the smallest range you will get
+    
+    MinTargetSize = 10000
+    Index = 1
+    Props = 0
+    Scanned = array()
+    Holos = array()
+    Alpha = 255
+    
     
     #ifdef holoAnim()
     hint("This E2 can't run on this server, you need to enable holo")
@@ -34,11 +44,40 @@ if (->HoloScale){
     Scale = HoloScale
 }
 else{
-    Scale = 10
+    Scale = 13
 }
 
 
 #####END Manage wire inputs#####
+if (Next&~Next){
+    holoColor(Holos[Index%Props+1,number],vec(255,255,255))
+    Index += 1
+    holoColor(Holos[Index%Props+1,number],vec(255,0,0))
+    
+    Target = Scanned[Index%Props,entity]
+}
+if (Previous&~Previous){
+    holoColor(Holos[Index%Props+1,number],vec(255,255,255))
+    Index -= 1
+    holoColor(Holos[Index%Props+1,number],vec(255,0,0))
+    
+    Target = Scanned[Index%Props,entity]
+}
+if (SaveTarget&~SaveTarget){
+    SavedTarget = Target
+    print("Saved target")
+}
+if (~Transparent){
+    if (Transparent){
+        Alpha = 200
+    }else{
+        Alpha = 255
+    }
+    for (X=2,Holos:count()){
+        holoAlpha(Holos[X,number],Alpha)
+    }
+}
+
 if (!Active&~Active){
     soundStop(0)
     #entity():soundPlay(1,0,"bail/aaah.mp3")
@@ -90,6 +129,11 @@ if (Active&~Active){
     
     Entities = findToArray()
     
+    
+    Scanned = array()
+    Holos = array()
+    Index = 1
+    Props = 0
     X = 1
     
     while (X < Entities:count() & perf()){
@@ -98,12 +142,19 @@ if (Active&~Active){
         if (Entity:volume()>MinSize|Entity:isPlayer()){
             ID = Entity:id()+5#+5 (you can add 5 holo before it)
     
-            #print(Entity:id())
+            if (Entity:volume()>MinTargetSize|Entity:isPlayer()){
+                #entities that will be targetable
+                Scanned[Scanned:count()+1,entity] = Entity
+                Holos[Scanned:count()+1,number] = ID
+                Props += 1
+            }
+            
             
             holoCreate(ID)
             holoModel(ID,Entity:model())
             holoMaterial(ID,Entity:getMaterial())
             holoScale(ID,vec(1,1,1)/Scale)
+            holoAlpha(ID,Alpha)
             
             LocalPos = HoloScan:toLocal(Entity:pos())/Scale
             LocalAng = HoloScan:toLocal(Entity:angles())
