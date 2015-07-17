@@ -1,0 +1,24 @@
+@name Teleporter tablet server
+@inputs Transporter:wirelink Gps:vector
+@outputs 
+@persist 
+@trigger 
+@model models/Iziraider/artifacts/asgard_stone.mdl
+
+if (first()|dupefinished()){
+    dsJoinGroup("Teleporter")
+    dsSetScope(2)
+}
+
+
+if (dsClk("Send")){
+    Data = dsGetArray()
+    Origin = Data[1,vector]
+    Dest = Data[2,vector]
+    All = Data[3,number]
+    Transporter:stargateAsgardTeleport(Origin,Dest,All)
+}
+if (dsClk("GetPlayer")){
+    Player = dsGetEntity()
+    Transporter:stargateAsgardTeleport(Player:pos(),Gps,0)
+}

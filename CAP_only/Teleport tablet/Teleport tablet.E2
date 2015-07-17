@@ -1,0 +1,21 @@
+@name Click me
+@model models/Iziraider/artifacts/ancient_pallet.mdl
+
+interval(250)
+
+if (first()|dupefinished()){
+    hint("this E2 must run with 'Teleporter tablet server' E2",5)
+    dsSetScope(2)
+}
+
+findByClass("player")
+findSortByDistance(entity():pos())
+Player = find()
+
+Dist = Player:pos():distance(entity():pos())
+
+
+if (Dist<250&Player:keyUse()&Player:aimEntity()==entity()){
+    dsSend("GetPlayer","Teleporter",Player)
+}
+

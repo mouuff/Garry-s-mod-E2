@@ -1,0 +1,106 @@
+@name New Npc Control
+@inputs Hud:wirelink PodControler:wirelink Camera:wirelink ChangeNpc
+@outputs 
+@persist N Npcs:array Npc:entity
+@trigger 
+
+
+
+W = PodControler:number("W")
+S = PodControler:number("S")
+A = PodControler:number("A")
+D = PodControler:number("D")
+R = PodControler:number("R")
+Shift = PodControler:number("Shift")
+
+#Space = PodControler:number("Space")
+ChairActive = PodControler:number("Active")
+Bearing = PodControler:number("Bearing")
+Elevation = PodControler:number("Elevation")
+Attack = PodControler:number("Mouse1")
+Follow = PodControler:number("Mouse2")
+Light = PodControler:number("Light")
+
+Chair = PodControler:entity("Entity")
+
+if (first()|dupefinished()){
+    
+    
+    #BEGIN Hud
+    
+    #Hud:egpClear()
+    
+    Hud:egp3DTracker(1,vec(0,0,0))
+    
+    Hud:egpCircleOutline(2,vec2(0,0),vec2(15,15))
+    Hud:egpColor(2,vec(0,255,0))
+    Hud:egpSize(2,5)
+    Hud:egpParent(2,1)
+    
+    Hud:egpText(3,"No player locked",vec2(10,10))
+    Hud:egpSize(3,15)
+    Hud:egpParent(3,1)
+    
+    #END Hud
+    
+    Npc = noentity()
+    N = 1
+    
+    holoCreate(1)
+    holoCreate(2)
+    
+    holoModel(2, "sphere")
+    holoScale(2,vec(0.4,0.4,0.4))
+    holoAng(2,ang(vec(90,0,0)))
+    
+    #holoAlpha(1,0)
+    #holoAlpha(2,0)
+}
+
+
+holoPos(1, Npc:pos()+vec(0,0,Npc:height()*1.1))
+
+
+
+#holoAng(1,ang(vec(-Elevation, Bearing, 0)))
+
+#client side camera (more fluid)
+holoAng(1,ang(vec(-Elevation, Bearing-Chair:angles():yaw(), 0)))
+
+
+
+CamPos = holoEntity(1):pos()
+CamAng = holoEntity(1):angles()
+
+HA = rangerOffset(100000,CamPos,holoEntity(1):forward())
+holoPos(2,HA:pos())
+Hud:egpPos(1,HA:pos())
+
+Camera:setVector("Position",CamPos)
+Camera:setAngle("Angle",CamAng)
+
+
+
+if (ChairActive & Npc!=noentity()){
+    interval(10)
+    Camera:setNumber("Activated",1)
+}
+else{
+    interval(1000)
+    Camera:setNumber("Activated",0)
+    
+    N = 1
+    findByClass("npc_*")
+    findIncludePlayerProps(owner())
+    Npcs = findToArray()
+    Npc = Npcs[N,entity]
+}
+
+if (ChangeNpc&~ChangeNpc){
+    N = (N%Npcs:count())+1
+    Npc = Npcs[N,entity]
+}
+
+
+
+
