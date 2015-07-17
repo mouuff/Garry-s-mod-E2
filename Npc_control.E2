@@ -17,8 +17,8 @@ Shift = PodControler:number("Shift")
 ChairActive = PodControler:number("Active")
 Bearing = PodControler:number("Bearing")
 Elevation = PodControler:number("Elevation")
-Attack = PodControler:number("Mouse1")
-Follow = PodControler:number("Mouse2")
+Mouse1 = PodControler:number("Mouse1")
+Mouse2 = PodControler:number("Mouse2")
 Light = PodControler:number("Light")
 
 Chair = PodControler:entity("Entity")
@@ -28,7 +28,7 @@ if (first()|dupefinished()){
     
     #BEGIN Hud
     
-    #Hud:egpClear()
+    Hud:egpClear()
     
     Hud:egp3DTracker(1,vec(0,0,0))
     
@@ -46,19 +46,27 @@ if (first()|dupefinished()){
     Npc = noentity()
     N = 1
     
-    holoCreate(1)
-    holoCreate(2)
+    holoCreate(1)#camera holo
+    holoCreate(2)#aim holo
+    #holoCreate(3)#walk holo
+    #holoCreate(4)
     
     holoModel(2, "sphere")
     holoScale(2,vec(0.4,0.4,0.4))
     holoAng(2,ang(vec(90,0,0)))
     
-    #holoAlpha(1,0)
-    #holoAlpha(2,0)
+    #holoAng(3,ang(vec(90,0,0)))
+    
+    #holoAng(4,ang(vec(0,0,0)))
+    
+    for (X=1,2){
+        holoAlpha(X,0)
+    }
+    
 }
 
 
-holoPos(1, Npc:pos()+vec(0,0,Npc:height()*1.1))
+holoPos(1, Npc:pos()+vec(0,0,Npc:height()*1.3))
 
 
 
@@ -72,18 +80,46 @@ holoAng(1,ang(vec(-Elevation, Bearing-Chair:angles():yaw(), 0)))
 CamPos = holoEntity(1):pos()
 CamAng = holoEntity(1):angles()
 
+#BEGIN aim
 HA = rangerOffset(100000,CamPos,holoEntity(1):forward())
 holoPos(2,HA:pos())
 Hud:egpPos(1,HA:pos())
+#END aim
+
+#BEGIN walk
+#[
+HB = rangerOffset(300,CamPos,holoEntity(1):forward())
+holoPos(3,HB:pos())
+
+HC = rangerOffset(10000,HB:pos(),holoEntity(3):forward())
+holoPos(4,HC:pos())
+]#
+#END walk
 
 Camera:setVector("Position",CamPos)
 Camera:setAngle("Angle",CamAng)
 
 
 
-if (ChairActive & Npc!=noentity()){
-    interval(10)
+if (ChairActive & Npc){
+    interval(25)
     Camera:setNumber("Activated",1)
+    
+    Hud:egpSetText(3,HA:entity():name())
+    
+    Npc:npcFace(holoEntity(2):pos())
+    if (W){
+        Npc:npcGoRun(holoEntity(2):pos())
+    }
+    if (Mouse1){
+        Hud:egpColor(2,vec(255,0,0))
+        Npc:npcSetTarget(HA:entity())
+        Npc:npcShoot()
+        #Npc:npcRelationship(HA:entity(),"hate",999)
+    }
+    else{
+        Hud:egpColor(2,vec(0,255,0))
+    }
 }
 else{
     interval(1000)
@@ -100,7 +136,5 @@ if (ChangeNpc&~ChangeNpc){
     N = (N%Npcs:count())+1
     Npc = Npcs[N,entity]
 }
-
-
 
 
