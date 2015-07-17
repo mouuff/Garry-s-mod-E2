@@ -2,7 +2,8 @@
 @inputs Hud:wirelink PodControler:wirelink Camera:wirelink ChangePlayer
 @inputs Shield ShieldOn Power
 @outputs Target:entity CamPos:vector CamAng:angle AimPos:vector
-@persist Obs:table Target:entity CamPos:vector CamAng:angle AimPos:vector Failed N ChangePlayer Spying
+@persist Obs:table Target:entity CamPos:vector CamAng:angle AimPos:vector
+@persist Failed N ChangePlayer Spying
 @trigger 
 
 function void setPos(V:vector){
@@ -25,6 +26,8 @@ Attack = PodControler:number("Mouse1")
 Follow = PodControler:number("Mouse2")
 Light = PodControler:number("Light")
 
+Chair = PodControler:entity("Entity")
+
 if (ChairActive){
     interval(10)
 }
@@ -32,7 +35,7 @@ else{
     interval(1000)
 }
 
-holoAng(1,ang(vec(-Elevation, Bearing, 0)))
+
 
 if (first() | dupefinished()){
     holoCreate(1)
@@ -64,6 +67,10 @@ if (first() | dupefinished()){
     
     Spying = 0
 }
+
+#holoAng(1,ang(vec(-Elevation, Bearing, 0)))
+holoAng(1,ang(vec(-Elevation, Bearing-Chair:angles():yaw(), 0)))
+
 
 if (Spying){
     holoPos(1, Target:toWorld(vec(0,0,80)))
