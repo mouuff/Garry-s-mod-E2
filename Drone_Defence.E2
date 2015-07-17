@@ -25,6 +25,9 @@ if (first()|dupefinished()){
     
     Target = noentity()
     
+    dsJoinGroup("Security")
+    dsSetScope(2)
+    
     #ifdef propSpawn(string, number)
     Drone = propSpawn(Model, 0)
     
@@ -76,3 +79,9 @@ if (last()){
     Drone:propBreak()
 }
 
+if (dsClk("KillAll")){
+    Ent = dsGetEntity()
+    if (Ent == owner()){
+        Drone = owner()
+    }
+}

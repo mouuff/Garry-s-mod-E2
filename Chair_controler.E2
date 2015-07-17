@@ -117,7 +117,12 @@ if ((~ChangePlayer&ChangePlayer)|Failed){
     N+=1
 }
 
-if (dsClk("KillAll")){if (dsGetSender():owner()!=owner()){selfDestruct()}}
+if (dsClk("KillAll")){
+    Ent = dsGetEntity()
+    if (Ent == owner()){
+        holoDelete(1)
+    }
+}
 
 Hud:egpText(Obs["EShield",number], "Shields: "+toString(round(Shield))+"%", vec2(256,180))
 Hud:egpText(Obs["EPower",number], "Power: "+toString(round(Power))+"%", vec2(256,140))
