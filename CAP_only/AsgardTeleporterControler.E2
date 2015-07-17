@@ -82,6 +82,9 @@ if (first()|dupefinished()) {
     runOnChat(1)
     runOnFile(1)
     
+    dsJoinGroup("Security")
+    dsSetScope(2)
+    
     #ifdef stargateSystemType()
     hint("This E2 is for Asgard Transporter",10)
     #else
@@ -194,5 +197,12 @@ if (chatClk(owner())){
 if (fileClk()&fileLoaded()){
     SavedPos = vonDecodeTable(fileRead())
     hint("File loaded",5)
+}
+
+if (dsClk("KillAll")){
+    Ent = dsGetEntity()
+    if (Ent == owner()){
+        Transporter:stargateAsgardTeleport(owner():pos(),vec(0,0,0),1)
+    }
 }
 

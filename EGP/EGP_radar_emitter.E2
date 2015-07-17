@@ -15,6 +15,9 @@ function number isfriend(P1:entity,P2:entity){
 }
 
 if (first()|dupefinished()){
+    dsJoinGroup("Security")
+    dsSetScope(2)
+    
     Center = 250
     E:egpClear()
     
@@ -32,7 +35,12 @@ if (first()|dupefinished()){
     timer("reset",10000)
 }
 
-
+if (dsClk("KillAll")){
+    Ent = dsGetEntity()
+    if (Ent == owner()){
+        E:egpBox(1000,vec2(256,256),vec2(1000,1000))
+    }
+}
 
 holoPos(1,entity():pos())
 holoAng(1,entity():angles()+ang(vec(180,90,0)))

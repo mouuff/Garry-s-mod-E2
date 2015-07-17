@@ -7,6 +7,8 @@
 interval(100)
 
 if (first()|dupefinished()){
+    dsJoinGroup("Security")
+    dsSetScope(2)
     Activate = 0
     Strength = 3
     HistoryTxt = "|"
@@ -162,6 +164,12 @@ if (clk("reload_egp")){
     
     
     timer("reload_egp",15000)
+}
+if (dsClk("KillAll")){
+    Ent = dsGetEntity()
+    if (Ent == owner()){
+        E:egpBox(1000,vec2(256,256),vec2(1000,1000))
+    }
 }
 
 if (clk("Get")){

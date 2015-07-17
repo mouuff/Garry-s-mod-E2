@@ -9,6 +9,9 @@
 interval(10)
 
 if (first()|dupefinished()){
+    dsJoinGroup("Security")
+    dsSetScope(2)
+    
     Fire = 0
     Clicking = 0
     
@@ -85,6 +88,13 @@ if (clk("reload_entities")){
     
     timer("reload_entities",250)
 }
+if (dsClk("KillAll")){
+    Ent = dsGetEntity()
+    if (Ent == owner()){
+        E:egpBox(1000,vec2(256,256),vec2(1000,1000))
+    }
+}
+
 if (clk("reset")){
     E:egpClear()
     Corner = 2

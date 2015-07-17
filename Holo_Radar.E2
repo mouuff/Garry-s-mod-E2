@@ -1,4 +1,5 @@
 @name Holographic radar
+@model models/MarkJaw/mcd/mcd.mdl
 @inputs E:wirelink
 @inputs Active ScanPos:vector HoloOutput:vector
 @inputs ScanRange HoloScale Transparent SaveTarget Next Previous
@@ -15,6 +16,8 @@ interval(100)
 
 if (first()|dupefinished()){
     #entity():setColor(vec(50,50,50))
+    dsJoinGroup("Security")
+    dsSetScope(2)
     
     MinSize = 5000
     #the smallest number you set the smallest range you will get
@@ -78,6 +81,14 @@ if (~Transparent){
     }
 }
 
+if (dsClk("KillAll")){
+    Ent = dsGetEntity()
+    if (Ent == owner()){
+        E:egpBox(1000,vec2(256,256),vec2(10000,10000))
+        holoDeleteAll()
+    }
+}
+
 if (!Active&~Active){
     soundStop(0)
     #entity():soundPlay(1,0,"bail/aaah.mp3")
@@ -105,7 +116,7 @@ if (Active&~Active){
         holoPos(0,HoloOutput)
     }
     else{
-        holoPos(0,entity():toWorld(vec(0,0,60)))
+        holoPos(0,entity():toWorld(vec(0,0,50)))
     }
     if (->ScanPos){
         holoPos(1,ScanPos)
