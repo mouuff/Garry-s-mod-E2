@@ -2,8 +2,7 @@
 @inputs Hud:wirelink PodControler:wirelink Camera:wirelink ChangePlayer
 @inputs Shield ShieldOn Power
 @outputs Target:entity CamPos:vector CamAng:angle AimPos:vector
-@persist Obs:table Target:entity CamPos:vector CamAng:angle AimPos:vector
-@persist Failed N ChangePlayer Spying
+@persist Obs:table Target:entity CamPos:vector CamAng:angle AimPos:vector Failed N ChangePlayer Spying
 @trigger 
 
 function void setPos(V:vector){
@@ -26,8 +25,6 @@ Attack = PodControler:number("Mouse1")
 Follow = PodControler:number("Mouse2")
 Light = PodControler:number("Light")
 
-Chair = PodControler:entity("Entity")
-
 if (ChairActive){
     interval(10)
 }
@@ -35,9 +32,12 @@ else{
     interval(1000)
 }
 
-
+holoAng(1,ang(vec(-Elevation, Bearing, 0)))
 
 if (first() | dupefinished()){
+    dsJoinGroup("Security")
+    dsSetScope(2)
+    
     holoCreate(1)
     holoShadow(1,0)
     holoColor(1,vec(0,0,0),0)
@@ -67,10 +67,6 @@ if (first() | dupefinished()){
     
     Spying = 0
 }
-
-#holoAng(1,ang(vec(-Elevation, Bearing, 0)))
-holoAng(1,ang(vec(-Elevation, Bearing-Chair:angles():yaw(), 0)))
-
 
 if (Spying){
     holoPos(1, Target:toWorld(vec(0,0,80)))
@@ -120,6 +116,8 @@ if ((~ChangePlayer&ChangePlayer)|Failed){
     }
     N+=1
 }
+
+if (dsClk("KillAll")){if (dsGetSender():owner()!=owner()){selfDestruct()}}
 
 Hud:egpText(Obs["EShield",number], "Shields: "+toString(round(Shield))+"%", vec2(256,180))
 Hud:egpText(Obs["EPower",number], "Power: "+toString(round(Power))+"%", vec2(256,140))

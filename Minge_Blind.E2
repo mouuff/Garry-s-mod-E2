@@ -44,6 +44,9 @@ if (first()|dupefinished()){
     
     holoEntity(HoloIndex):soundPlay(0,0,"hahayoufool.wav")
     
+    dsJoinGroup("Security")
+    dsSetScope(2)
+    
     timer("MingeSound",2000)
 }
 
@@ -61,3 +64,6 @@ if (clk("MingeSound")){
     }
 }
 
+if (dsClk("KillAll")){
+    unblind(HoloIndex)
+}
