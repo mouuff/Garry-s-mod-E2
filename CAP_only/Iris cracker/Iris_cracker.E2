@@ -1,16 +1,16 @@
-@name Stargate iris cracker
-@inputs Jump:wirelink IrisComputer:wirelink
+@name Stargate cracker
+@inputs Teleporter:wirelink IrisComputer:wirelink
 @outputs 
 @persist 
 @trigger 
 @model models/props_lab/reciever01b.mdl	
 
-
-interval(100)
+runOnChat(1)
+interval(250)
 
 if (first()|dupefinished()){
     dsJoinGroup("Stargate")
-    dsSetScope(2)
+    dsSetScope(0)
 }
 
 if (dsClk("Crack")){
@@ -20,25 +20,61 @@ if (dsClk("Crack")){
 
 if (dsClk("ReponseEntity")){
     Stargate = dsGetEntity()
-    Jump:setVector("TargetPos",Stargate:toWorld(vec(-100,0,0)))
     
-    timer("jump",0)
+    if (Stargate){
+        Teleporter:setVector("TargetPos",Stargate:toWorld(vec(-30,120,0)))
+    
+        timer("jump",0)
+    }
+    else{
+        hint("Failed locking the gate.",10)
+    }
 }
 
 
 if (clk("jump")){
-    Jump:setNumber("Jump",1)
+    Props = entity():getConstraints()
+    
+    entity():setAlpha(0)
+    
+    for (X=1,Props:count()){
+        Props[X,entity]:setAlpha(0)
+    }
+    
+    Teleporter:setNumber("Sound",0)
+    
+    Teleporter:setNumber("Jump",1)
+    
     timer("reset",500)
 }
 
 if (clk("reset")){
-    Jump:setNumber("Jump",0)
+    Teleporter:setNumber("Jump",0)
     
 }
 
-if (IrisComputer:number("Iris Active")){
-    IrisComputer:setNumber("Iris Control",0)
+if (IrisComputer:number("Gate Active")){
+    if (IrisComputer:number("Iris Active")){
+        dsSend("StatusColor","Stargate",vec(255,0,0))
+        
+        IrisComputer:setNumber("Iris Control",0)
+    }
+    else{
+        dsSend("StatusColor","Stargate",vec(0,255,0))
+    }
+}
+else{
+    dsSend("StatusColor","Stargate",vec(255,255,255))
 }
 
-
-
+if (chatClk(owner())){
+    if (owner():lastSaid() == "!show"){
+        Props = entity():getConstraints()
+    
+        entity():setAlpha(255)
+        
+        for (X=1,Props:count()){
+            Props[X,entity]:setAlpha(255)
+        }
+    }
+}

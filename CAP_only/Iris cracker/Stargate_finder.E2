@@ -27,7 +27,7 @@ if (first()|dupefinished()){
     #this E2 needs to be linked to a stargate to work
     
     dsJoinGroup("Stargate")
-    dsSetScope(2)
+    dsSetScope(0)
     
     Stargate = entity():isWeldedTo()
     
@@ -48,5 +48,9 @@ if (dsClk("GetEntityByAddress")){
     Result = findStargate(Stargate,Address)
     
     dsSend("ReponseEntity","Stargate",Result)
+}
+
+if (dsClk("StatusColor")){
+    entity():setColor(dsGetVector())
 }
 
