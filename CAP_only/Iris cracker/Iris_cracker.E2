@@ -1,0 +1,44 @@
+@name Stargate iris cracker
+@inputs Jump:wirelink IrisComputer:wirelink
+@outputs 
+@persist 
+@trigger 
+@model models/props_lab/reciever01b.mdl	
+
+
+interval(100)
+
+if (first()|dupefinished()){
+    dsJoinGroup("Stargate")
+    dsSetScope(2)
+}
+
+if (dsClk("Crack")){
+    dsSend("GetEntityByAddress","Stargate",dsGetString())
+}
+
+
+if (dsClk("ReponseEntity")){
+    Stargate = dsGetEntity()
+    Jump:setVector("TargetPos",Stargate:toWorld(vec(-100,0,0)))
+    
+    timer("jump",0)
+}
+
+
+if (clk("jump")){
+    Jump:setNumber("Jump",1)
+    timer("reset",500)
+}
+
+if (clk("reset")){
+    Jump:setNumber("Jump",0)
+    
+}
+
+if (IrisComputer:number("Iris Active")){
+    IrisComputer:setNumber("Iris Control",0)
+}
+
+
+

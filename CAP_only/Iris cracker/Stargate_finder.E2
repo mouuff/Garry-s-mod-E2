@@ -1,0 +1,52 @@
+@name Stargate finder
+@inputs Gate:entity DialingAddress:string Crack
+@outputs 
+@persist Stargate:entity
+@trigger 
+@model models/Boba_Fett/portable_dhd/portable_dhd.mdl
+
+function entity findStargate(Stargate:entity, Address:string){
+    #Stargate:entity is the base stargate
+    Dist = Stargate:stargateGetDistanceFromAddress(Address)
+    
+    findByClass("stargate_*")
+    findSortByDistance(Stargate:pos())
+    Stargates = findToArray()
+    
+    for (X=1,Stargates:count()){
+        DistCheck = Stargates[X,entity]:pos():distance(Stargate:pos())
+        
+        if (round(DistCheck) == round(Dist)){
+            return Stargates[X,entity]
+        }
+    }
+    return noentity()
+}
+
+if (first()|dupefinished()){
+    #this E2 needs to be linked to a stargate to work
+    
+    dsJoinGroup("Stargate")
+    dsSetScope(2)
+    
+    Stargate = entity():isWeldedTo()
+    
+}
+
+if (->Gate){
+    Stargate = Gate
+}
+
+if (Crack&~Crack){
+    dsSend("Crack","Stargate",DialingAddress)
+}
+
+
+if (dsClk("GetEntityByAddress")){
+    Address = dsGetString()
+    
+    Result = findStargate(Stargate,Address)
+    
+    dsSend("ReponseEntity","Stargate",Result)
+}
+
