@@ -22,7 +22,7 @@ if (dsClk("ReponseEntity")){
     Stargate = dsGetEntity()
     
     if (Stargate){
-        Teleporter:setVector("TargetPos",Stargate:toWorld(vec(-30,120,0)))
+        Teleporter:setVector("TargetPos",Stargate:toWorld(vec(0,100,100)))
     
         timer("jump",0)
     }

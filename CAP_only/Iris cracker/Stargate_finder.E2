@@ -1,9 +1,11 @@
 @name Stargate finder
-@inputs Gate:entity DialingAddress:string Crack
+@inputs Gate:entity CrackAddress:string Crack
 @outputs 
-@persist Stargate:entity
+@persist Stargate:entity Result:entity Pressed Activated
 @trigger 
 @model models/Boba_Fett/portable_dhd/portable_dhd.mdl
+
+
 
 function entity findStargate(Stargate:entity, Address:string){
     #Stargate:entity is the base stargate
@@ -23,6 +25,22 @@ function entity findStargate(Stargate:entity, Address:string){
     return noentity()
 }
 
+function number useClk(){
+    findByClass("player")
+    findSortByDistance(entity():pos())
+    Player = find()
+    
+    Dist = Player:pos():distance(entity():pos())
+    
+    
+    if (Dist<250&Player:keyUse()&Player:aimEntity()==entity()){
+        return 1
+    }
+    return 0
+}
+
+
+
 if (first()|dupefinished()){
     #this E2 needs to be linked to a stargate to work
     
@@ -30,16 +48,39 @@ if (first()|dupefinished()){
     dsSetScope(0)
     
     Stargate = entity():isWeldedTo()
-    
+    Result = Gate
+    Pressed = 0
+    Activated = 0
 }
 
 if (->Gate){
     Stargate = Gate
 }
 
-if (Crack&~Crack){
-    dsSend("Crack","Stargate",DialingAddress)
+if (->CrackAddress){
+    SendAddress = CrackAddress
 }
+
+#START crack on click or on wire input
+Pressing = useClk()
+
+if ((Crack&~Crack) | (Pressing&!Pressed)){
+    dsSend("Crack","Stargate",SendAddress)
+}
+Pressed = Pressing
+#END crack on click or on wire input
+
+#START send back the cracker
+Active = Gate:stargateActive()
+
+if (!Active&Activated){
+    dsSend("ReponseEntity","Stargate",Gate)
+    Result = Gate
+}
+
+Activated = Active
+#END send back the cracker
+
 
 
 if (dsClk("GetEntityByAddress")){
@@ -50,7 +91,13 @@ if (dsClk("GetEntityByAddress")){
     dsSend("ReponseEntity","Stargate",Result)
 }
 
-if (dsClk("StatusColor")){
+
+if (Result==Gate){
+    entity():setColor(vec(255,255,0))
+}
+elseif (dsClk("StatusColor")){
     entity():setColor(dsGetVector())
 }
+
+
 
