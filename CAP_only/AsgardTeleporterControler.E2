@@ -1,6 +1,6 @@
 @name Transporter Control E2
 @inputs Transporter:wirelink
-@persist SavedPos:table WhiteList:array File:string SafeZoneRange SafeZonePos:vector SafeActive
+@persist SavedPos:table
 @model models/Iziraider/artifacts/asgard_stone.mdl
 
 
@@ -8,13 +8,6 @@
 function void savePos(Name:string, Pos:vector){
     #store a new position
     SavedPos[Name, vector] = Pos
-    if (fileCanWrite()){
-        fileWrite(File,vonEncode(SavedPos))
-        hint("Saved to file",5)
-    }
-    else{
-        hint("Couldn't write file",5)
-    }
 }
 function void resetPos(){
     SavedPos = table()
@@ -30,35 +23,7 @@ function vector getPos(Name:string){
     return vec(0,0,0)
 }
 
-#safe zone functions
-function void resetSafe(){
-    WhiteList[1, entity] = owner()
-    SafeActive = 0
-}
-function number toggleSafeZone(){
-    if (SafeActive){
-        SafeActive = 0
-    }
-    else{
-        SafeActive = 1
-    }
-    return SafeActive
-}
-function void setSafeZone(Pos:vector, Range){
-    SafeZoneRange = Range
-    SafeZonePos = Pos
-}
-function entity getIntruderInSafeZone(){
-    findInSphere(SafeZonePos, SafeZoneRange)
-    findIncludeClass("player")
-    findExcludeEntities(WhiteList)
-    findSortByDistance(SafeZonePos)
-    Intruder = find()
-    return Intruder
-}
-function void addToWhiteList(Player:entity){
-    WhiteList[WhiteList:count()+1, entity] = Player
-}
+
 
 function vector getSafePos(Pos:vector){
     #finding free space around the vector (to not get teleported in walls)
@@ -80,7 +45,6 @@ function vector getSafePos(Pos:vector){
 
 if (first()|dupefinished()) {
     runOnChat(1)
-    runOnFile(1)
     
     dsJoinGroup("Security")
     dsSetScope(2)
@@ -91,24 +55,10 @@ if (first()|dupefinished()) {
     hint("You need CAP",10)
     #endif
     
-    File = ">e2shared/Asgard_"+map()+".txt"
-    
-    fileLoad(File)
     
     resetPos()
-    resetSafe()
 }
 
-if (SafeActive){
-    interval(500)
-    Intruder = getIntruderInSafeZone()
-    if (Intruder){
-        Transporter:stargateAsgardTeleport(Intruder:pos(), vec(0,0,0), 0)
-    }
-}
-else{
-    interval(5000)
-}
 
 if (chatClk(owner())){
     LastSaid=owner():lastSaid():explode(" ")
@@ -116,7 +66,9 @@ if (chatClk(owner())){
     Arg1 = LastSaid[2,string]
     Arg2 = LastSaid[3,string]
     
-    
+    if (LastSaid[1,string]:find("!")){
+        hideChat(1)
+    }
     #save a position
     if (Command=="!save"&Arg1){
         savePos(Arg1:lower(), owner():pos())
@@ -125,23 +77,38 @@ if (chatClk(owner())){
     #get to the teleporter
     elseif (Command=="!base"){
         if (Arg1){
-            Transporter:stargateAsgardTeleport(findPlayerByName(Arg1):pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
+            Transporter:stargateAsgardTeleport(
+                findPlayerByName(Arg1):pos(),
+                entity():isWeldedTo():toWorld(vec(70,0,0))
+                ,0)
         }
         else{
-            Transporter:stargateAsgardTeleport(owner():pos(),entity():isWeldedTo():toWorld(vec(70,0,0)),0)
+            Transporter:stargateAsgardTeleport(
+                owner():pos(),
+                entity():isWeldedTo():toWorld(vec(70,0,0)),
+                0)
         }
     }
     #Pass a wall
     elseif (Command=="!wall"){
-        Transporter:stargateAsgardTeleport(owner():pos(), owner():toWorld(vec(90, 0, 0)), 0)
+        Transporter:stargateAsgardTeleport(
+            owner():pos(),
+            owner():toWorld(vec(90, 0, 0)),
+            0)
     }
     #send what you aim to a position you saved
     elseif (Command=="!cargo"&Arg1){
         if (Arg1=="base"){
-            Transporter:stargateAsgardTeleport(owner():aimPos(),entity():isWeldedTo():toWorld(vec(70,0,0)), 1)
+            Transporter:stargateAsgardTeleport(
+                owner():aimPos(),
+                entity():isWeldedTo():toWorld(vec(70,0,0)),
+                1)
         }
         else{
-            Transporter:stargateAsgardTeleport(owner():aimPos(), getPos(Arg1:lower())+vec(0,0,50), 1)
+            Transporter:stargateAsgardTeleport(
+                owner():aimPos(),
+                getPos(Arg1:lower())+vec(0,0,50),
+                1)
         }
     }
     #get to a saved position
@@ -149,21 +116,33 @@ if (chatClk(owner())){
         Pos = getPos(Arg1:lower())
         if (Pos){
             if (Arg2){
-                Transporter:stargateAsgardTeleport(findPlayerByName(Arg2):pos(),Pos, 0)
+                Transporter:stargateAsgardTeleport(
+                    findPlayerByName(Arg2):pos(),
+                    Pos,
+                    0)
             }
             else{
-                Transporter:stargateAsgardTeleport(owner():pos(), Pos, 0)
+                Transporter:stargateAsgardTeleport(
+                    owner():pos(),
+                    Pos,
+                    0)
             }
         }
         else{print(Arg1+" not found")}
     }
     #go to a player
     elseif (Command=="!tohim"){
-        Transporter:stargateAsgardTeleport(owner():pos(), getSafePos(findPlayerByName(Arg1):pos()),0)
+        Transporter:stargateAsgardTeleport(
+            owner():pos(),
+            getSafePos(findPlayerByName(Arg1):pos()),
+            0)
     }
     #teleport a player to you
     elseif (Command == "!tome"){
-        Transporter:stargateAsgardTeleport(findPlayerByName(Arg1):pos(), getSafePos(owner():pos()+vec(0,50,0)),0)
+        Transporter:stargateAsgardTeleport(
+            findPlayerByName(Arg1):pos(),
+            getSafePos(owner():pos()+vec(0,50,0)),
+            0)
     }
     #reset the E2
     elseif (Command == "!reset"){
@@ -176,28 +155,9 @@ if (chatClk(owner())){
             print(SavedPos:keys()[X, string])
         }
     }
-    #toggle safe zone
-    elseif (Command == "!safe"){
-        if (Arg1){
-            setSafeZone(owner():pos(),Arg1:toNumber())
-            print("Safe Zone Activated")
-        }
-        else{
-            print("SafeZone: " + toggleSafeZone())
-        }
-    }
-    #Add to white list
-    elseif (Command == "!white" & Arg1){
-        Player = findPlayerByName(Arg1)
-        addToWhiteList(Player)
-        hint("Added to white list: "+Player:name(),5)
-    }
 }
 
-if (fileClk()&fileLoaded()){
-    SavedPos = vonDecodeTable(fileRead())
-    hint("File loaded",5)
-}
+
 
 if (dsClk("KillAll")){
     Ent = dsGetEntity()
