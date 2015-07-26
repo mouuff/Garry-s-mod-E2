@@ -4,25 +4,6 @@
 @model models/Iziraider/artifacts/asgard_stone.mdl
 
 
-#position saver functions
-function void savePos(Name:string, Pos:vector){
-    #store a new position
-    SavedPos[Name, vector] = Pos
-}
-function void resetPos(){
-    SavedPos = table()
-}
-function vector getPos(Name:string){
-    #get a saved position
-    Keys = SavedPos:keys()
-    for (Key=1, Keys:count()){
-        if (Keys[Key,string]:find(Name)){
-            return SavedPos[Keys[Key,string],vector]
-        }
-    }
-    return vec(0,0,0)
-}
-
 function void writeFile(Name:string,Data:string){
     if (fileCanWrite()){
         fileWrite(Name,Data)
@@ -47,6 +28,26 @@ if(fileClk() & fileLoaded())
     LoadedFile = fileRead()
     SavedPos = vonDecodeTable(LoadedFile)
     hint("Teleporter positions loaded",5)
+}
+
+#position saver functions
+function void savePos(Name:string, Pos:vector){
+    #store a new position
+    SavedPos[Name, vector] = Pos
+    writeFile(FileName,vonEncode(SavedPos))
+}
+function void resetPos(){
+    SavedPos = table()
+}
+function vector getPos(Name:string){
+    #get a saved position
+    Keys = SavedPos:keys()
+    for (Key=1, Keys:count()){
+        if (Keys[Key,string]:find(Name)){
+            return SavedPos[Keys[Key,string],vector]
+        }
+    }
+    return vec(0,0,0)
 }
 
 
@@ -100,8 +101,6 @@ if (chatClk(owner())){
     #save a position
     if (Command=="!save"&Arg1){
         savePos(Arg1:lower(), owner():pos())
-        
-        writeFile(FileName,vonEncode(SavedPos))
         
         print("Position Saved as "+Arg1)
     }
