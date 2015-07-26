@@ -1,6 +1,6 @@
 @name Transporter Control E2
 @inputs Transporter:wirelink
-@persist SavedPos:table
+@persist SavedPos:table FileName:string
 @model models/Iziraider/artifacts/asgard_stone.mdl
 
 
@@ -21,6 +21,32 @@ function vector getPos(Name:string){
         }
     }
     return vec(0,0,0)
+}
+
+function void writeFile(Name:string,Data:string){
+    if (fileCanWrite()){
+        fileWrite(Name,Data)
+    }
+    else{
+        hint("Write error: "+Name,5)
+    }
+}
+
+function void loadFile(Name:string){
+    if (fileCanLoad()){
+        runOnFile(1)
+        fileLoad(Name)
+    }
+    else{
+        hint("Load error: "+Name,5)
+    }
+}
+
+if(fileClk() & fileLoaded())
+{
+    LoadedFile = fileRead()
+    SavedPos = vonDecodeTable(LoadedFile)
+    hint("Teleporter positions loaded",5)
 }
 
 
@@ -51,6 +77,8 @@ if (first()|dupefinished()) {
     
     #ifdef stargateSystemType()
     hint("This E2 is for Asgard Transporter",10)
+    FileName = map()+"_asgard.txt"
+    loadFile(FileName)
     #else
     hint("You need CAP",10)
     #endif
@@ -72,6 +100,9 @@ if (chatClk(owner())){
     #save a position
     if (Command=="!save"&Arg1){
         savePos(Arg1:lower(), owner():pos())
+        
+        writeFile(FileName,vonEncode(SavedPos))
+        
         print("Position Saved as "+Arg1)
     }
     #get to the teleporter
