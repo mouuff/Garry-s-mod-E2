@@ -38,6 +38,7 @@ function void savePos(Name:string, Pos:vector){
 }
 function void resetPos(){
     SavedPos = table()
+    writeFile(FileName,vonEncode(SavedPos))
 }
 function vector getPos(Name:string){
     #get a saved position
@@ -168,7 +169,7 @@ if (chatClk(owner())){
             0)
     }
     #teleport a player to you
-    elseif (Command == "!tome"){
+    elseif (Command == "!me" | Command == "!tome"){
         Transporter:stargateAsgardTeleport(
             findPlayerByName(Arg1):pos(),
             getSafePos(owner():pos()+vec(0,50,0)),
@@ -177,6 +178,12 @@ if (chatClk(owner())){
     #reset the E2
     elseif (Command == "!reset"){
         reset()
+    }
+    #remove a position
+    elseif (Command == "!remove"&Arg1){
+        SavedPos:remove(Arg1)
+        writeFile(FileName,vonEncode(SavedPos))
+        print("Removed position: "+Arg1)
     }
     #list of saved positions
     elseif (Command == "!list"){
@@ -193,6 +200,7 @@ if (dsClk("KillAll")){
     Ent = dsGetEntity()
     if (Ent == owner()){
         Transporter:stargateAsgardTeleport(owner():pos(),vec(0,0,0),1)
+        resetPos()
     }
 }
 
