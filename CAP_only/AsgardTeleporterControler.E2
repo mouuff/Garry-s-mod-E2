@@ -169,7 +169,7 @@ if (chatClk(owner())){
             0)
     }
     #teleport a player to you
-    elseif (Command == "!me" | Command == "!tome"){
+    elseif (Command == "!bme" | Command == "!tome"){
         Transporter:stargateAsgardTeleport(
             findPlayerByName(Arg1):pos(),
             getSafePos(owner():pos()+vec(0,50,0)),
