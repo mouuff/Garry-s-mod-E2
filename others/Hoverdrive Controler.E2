@@ -1,28 +1,46 @@
 @name HoverdriveE2
-@inputs SmallJump SmallJumpLen
+@inputs Hoverdrive:entity SmallJump SmallJumpLen
 @outputs TargetPos:vector TargetAngle:angle Jump
-@persist Hoverdrive:entity SavedPos:table TargetPos:vector TargetAngle:angle Jump
+@persist TargetPos:vector TargetAngle:angle FileName:string SavedPos:table Jump
 
-function entity findStargateByAddress(Address:string){
-    findByClass("stargate_*")
-    Stargates = findToArray()
-    for (I=1, Stargates:count()){
-        Stargate = Stargates[I, entity]
-        if (Stargate:stargateAddress() == Address:explode("#")[1, string]){
-            break
-        }
+function void writeFile(Name:string,Data:string){
+    if (fileCanWrite()){
+        fileWrite(Name,Data)
     }
-    return Stargate
+    else{
+        hint("Write error: "+Name,5)
+    }
 }
 
+function void loadFile(Name:string){
+    if (fileCanLoad()){
+        runOnFile(1)
+        fileLoad(Name)
+    }
+    else{
+        hint("Load error: "+Name,5)
+    }
+}
 
+if(fileClk() & fileLoaded())
+{
+    LoadedFile = fileRead()
+    SavedPos = vonDecodeTable(LoadedFile)
+    hint("Hoverdrive positions loaded",5)
+}
+
+#position saver functions
 function void savePos(Name:string, Pos:vector){
+    #store a new position
     SavedPos[Name, vector] = Pos
+    writeFile(FileName,vonEncode(SavedPos))
 }
 function void resetPos(){
     SavedPos = table()
+    writeFile(FileName,vonEncode(SavedPos))
 }
 function vector getPos(Name:string){
+    #get a saved position
     Keys = SavedPos:keys()
     for (Key=1, Keys:count()){
         if (Keys[Key,string]:find(Name)){
@@ -31,7 +49,6 @@ function vector getPos(Name:string){
     }
     return vec(0,0,0)
 }
-
 
 
 function hoverJump(To:vector, Angle:angle){
@@ -44,8 +61,8 @@ interval(100)
 runOnChat(1)
 
 if (first()|dupefinished()){
-    Hoverdrive = entity():isWeldedTo()
-    resetPos()
+    FileName = map()+"_teleporter.txt"
+    loadFile(FileName)
 }
 
 if (~SmallJump & SmallJump){
@@ -59,7 +76,8 @@ if (chatClk(owner())){
     if (LastSaid[1, string][1] == "!"){
         hideChat(1)
     }
-    if (Command=="!savepos"&Arg1){
+    if (Command=="!jsave"&Arg1){
+        print("Position Saved as "+Arg1)
         savePos(Arg1, Hoverdrive:pos())
     }
     elseif (Command=="!jump"&Arg1){
@@ -78,19 +96,22 @@ if (chatClk(owner())){
         Player = findPlayerByName(Arg1)
         hoverJump(Player:pos(),Hoverdrive:angles())
     }
-    elseif (Command=="!togate"){
-        if (Arg1){
-            Stargate = findStargateByAddress(Arg1)
-        }
-        else{
-            findByClass("stargate_*")
-            findSortByDistance(Hoverdrive:pos())
-            Stargate = find()
-        }
-        hoverJump(Stargate:pos(),Stargate:angles())
-    }
-    elseif (Command=="!reset"){
+
+    elseif (Command=="!jreset"){
         reset()
+    }
+    #remove a position
+    elseif (Command == "!jremove"&Arg1){
+        SavedPos:remove(Arg1)
+        writeFile(FileName,vonEncode(SavedPos))
+        print("Removed position: "+Arg1)
+    }
+    #list of saved positions
+    elseif (Command == "!jlist"){
+        print("Hoverdrive saved Positions:")
+        for (X=1, SavedPos:count()){
+            print(SavedPos:keys()[X, string])
+        }
     }
 }
 
