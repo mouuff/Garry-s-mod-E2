@@ -1,7 +1,8 @@
 @name HoverdriveE2
 @inputs Hoverdrive:entity SmallJump SmallJumpLen
 @outputs TargetPos:vector TargetAngle:angle Jump
-@persist TargetPos:vector TargetAngle:angle FileName:string SavedPos:table Jump
+@persist TargetPos:vector TargetAngle:angle Hoverdrive:entity
+@persist FileName:string SavedPos:table Jump
 
 function void writeFile(Name:string,Data:string){
     if (fileCanWrite()){
@@ -26,6 +27,7 @@ if(fileClk() & fileLoaded())
 {
     LoadedFile = fileRead()
     SavedPos = vonDecodeTable(LoadedFile)
+    Hoverdrive = entity()
     hint("Hoverdrive positions loaded",5)
 }
 
@@ -49,6 +51,7 @@ function vector getPos(Name:string){
     }
     return vec(0,0,0)
 }
+
 
 
 function hoverJump(To:vector, Angle:angle){
