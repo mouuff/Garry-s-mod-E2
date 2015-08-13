@@ -1,0 +1,78 @@
+@name Pro Aim
+@persist Target:entity OldTarget:entity
+
+#[
+This E2 is a kind of aimbot
+it works only with:
+Grenade, Combine Ball
+and Stargate Jaffa Staff/Wraith gun/Ronon Gun
+
+
+Help:
+To target someone or something
+just press zoom button while looking at it
+and in the chat it should write the entity currently locked
+
+to unlock the aimbot just look at the floor and press zoom again
+]#
+
+function void gotoPos(Pos:vector, Prop:entity){
+    Prop:applyForce((((Pos-Prop:pos())*10) - Prop:vel())*Prop:mass())
+}
+
+interval(100)
+
+if (first()|dupefinished()){
+    dsJoinGroup("Security")
+    dsSetScope(2)
+    
+    Target = noentity()
+}
+
+
+Weapon = owner():weapon():type()
+
+if (Weapon == "weapon_ar2"){
+    Class = "prop_combine_ball"
+}
+elseif(Weapon == "weapon_frag"){
+    Class = "npc_grenade_frag"
+}
+else{
+    Class = "energy_pulse"
+}
+
+if (owner():keyZoom()){
+    Target = owner():aimEntity()
+    if (Target != OldTarget){
+        if (Target){
+            print(Target)
+        }
+        else{
+            print("Unlocked")
+        }
+    }
+    OldTarget = Target
+}
+
+if (dsClk("KillAll")){
+    Ent = dsGetEntity()
+    if (Ent == owner()){
+        Target = owner()
+    }
+}
+
+#print(Weapon)
+#findInSphere(entity():pos(),1000)
+
+findByClass(Class)
+Ents = findToArray()
+
+for (X=1,Ents:count()){
+    Ent = Ents[X,entity]
+    if (Ent != entity()&Target){
+        Height = vec(0,0,Target:height()/2)
+        gotoPos(Target:toWorld(Height),Ent)
+        #print(Ent:type())
+    }
+}
