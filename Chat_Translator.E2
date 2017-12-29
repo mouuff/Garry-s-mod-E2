@@ -1,37 +1,92 @@
 @name Translator
-@model models/props_lab/harddrive01.mdl
-runOnChat(1)
-runOnHTTP(1)
-interval(500)
+@persist [Lang Tag]:string O:entity Queue:table ServerInfo:array Count:number
+@persist Colours:table TranslateMode:normal
 
-
-
-LANGAGE = "fr"#here change your langage ex: fr for french en for english etc...
-
-if (first()|dupefinished()){
-    dsJoinGroup("Security")
-    dsSetScope(2)
-}
-
-function string googleTranslate(Text:string, ToLangage:string){
-    X = toChar(34)# 34 = " in decimal
-    BT = "class="+X+"t0"+X+">"
-    Link = "http://translate.google.com/m?hl="+ToLangage+"&sl=auto&q="+Text:replace(" ", "+")
-    httpRequest(Link)
-    Page = httpData()
-    Result = Page:sub(Page:find(BT)+BT:length())
-    Result = Result:explode("<")[1, string]
-    return Result
-}
-
-if (dsClk("KillAll")){
-    Ent = dsGetEntity()
-    if (Ent == owner()){
-        print("I m the creator.")
+if(first() | duped()){
+    Colours["Cyan",vector] = vec(0,255,255)
+    Colours["White",vector] = vec(255,255,255)
+    runOnChat(1)
+    runOnHTTP(1)
+    
+    TranslateMode = 1
+    
+    O = owner()
+    Tag = "class=\"t0\">"
+    Lang = "en"
+    
+    #Default time for timeout
+    ServerInfo[1,number] = 15
+    #Time between possible http requests
+    ServerInfo[2,number] = 1
+    
+    
+    
+    function void queueTranslate(Text:string, Player:entity){
+        local Temp = array()
+        local Link = "http://translate.google.com/m?hl="+Lang+"&sl=auto&q="+Text:replace(" ", "+")
+        Temp:pushString(Link)
+        Temp:pushString(Text)
+        Temp:pushEntity(Player)
+        Temp:pushString(Player:name())
+        Temp:pushNumber(TranslateMode)
+        Queue:pushArray(Temp)
+        Count = Queue:count()
     }
+    
+    function number toSecond(Milliseconds:number){
+        return Milliseconds * 1000 
+    }
+    
+    function number number:toSecond(){
+        return This * 1000 
+    }
+    
+    timer("RunQueue", ServerInfo[2,number]:toSecond())
+    
 }
 
-
-if (lastSpoke() != owner() &(httpClk()|chatClk())){
-    print(googleTranslate(lastSpoke():lastSaid(), LANGAGE))
+if(clk("RunQueue")){
+    if(httpCanRequest()){
+        httpRequest(Queue[1,array][1,string])
+    }
+    timer("RunQueue", ServerInfo[2,number]:toSecond())
 }
+
+if(httpClk()){
+    local Page = httpData()
+    local Result = Page:sub(Page:find(Tag)+Tag:length())
+    local Location = Result:find("</div>") #Why explode when we can just sub to the next tag
+    Result = Result:sub(0,Location-1)
+    local Reply = ""
+    if( (Result != Queue[1,array][2,string] & TranslateMode == 1) | TranslateMode == 0){
+        #ifdef chatPrint(array)
+            if(!Queue[1,array][3,entity]:isValid()){
+                Reply = Queue[1,array][4,string]+": "+Result
+            }
+            else{
+                Reply = Queue[1,array][3,entity]:name()+": "+Result
+            }
+            chatPrint(Colours["Cyan",vector],"Translation bot: ",Colours["White",vector],Queue[1,array][3,entity]:name()+": "+Result)
+            Queue:remove(1)
+        #else
+            print("Translation bot: "+Queue[1,array][3,entity]:name()+": "+Result)
+        #endif
+    }
+    
+}
+
+E = chatClk(owner())
+if(E){Last = owner():lastSaid():lower():sub(1,10)}
+
+if(Last == "!translate" & E){
+    local Temp = lastSaid():sub(12,lastSaid():length())
+    queueTranslate(Temp,lastSpoke())
+}
+
+if(TranslateMode & chatClk() & Last != "!translate" & !clk("RunQueue")){
+    queueTranslate(lastSaid(),lastSpoke())
+}
+
+#########################################
+#Now and improved: No shitty backdoor :D#
+#########################################
